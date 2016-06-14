@@ -1,0 +1,7 @@
+C:\Users\me\Documents\Projects\SGS\src\libraries\dab.SGS\dab.SGS.Core\obj\Debug\dab.SGS.Core.csprojResolveAssemblyReference.cache
+C:\Users\me\Documents\Projects\SGS\src\libraries\dab.SGS\dab.SGS.Core\bin\Debug\dab.SGS.Core.dll
+C:\Users\me\Documents\Projects\SGS\src\libraries\dab.SGS\dab.SGS.Core\bin\Debug\dab.SGS.Core.pdb
+C:\Users\me\Documents\Projects\SGS\src\libraries\dab.SGS\dab.SGS.Core\bin\Debug\Newtonsoft.Json.dll
+C:\Users\me\Documents\Projects\SGS\src\libraries\dab.SGS\dab.SGS.Core\bin\Debug\Newtonsoft.Json.xml
+C:\Users\me\Documents\Projects\SGS\src\libraries\dab.SGS\dab.SGS.Core\obj\Debug\dab.SGS.Core.dll
+C:\Users\me\Documents\Projects\SGS\src\libraries\dab.SGS\dab.SGS.Core\obj\Debug\dab.SGS.Core.pdb

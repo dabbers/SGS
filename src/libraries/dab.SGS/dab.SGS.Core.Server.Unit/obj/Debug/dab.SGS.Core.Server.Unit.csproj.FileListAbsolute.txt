@@ -1,0 +1,11 @@
+C:\Users\me\Documents\Projects\SGS\src\libraries\dab.SGS\dab.SGS.Core.Server.Unit\bin\Debug\dab.SGS.Core.Server.Unit.dll
+C:\Users\me\Documents\Projects\SGS\src\libraries\dab.SGS\dab.SGS.Core.Server.Unit\bin\Debug\dab.SGS.Core.Server.Unit.pdb
+C:\Users\me\Documents\Projects\SGS\src\libraries\dab.SGS\dab.SGS.Core.Server.Unit\bin\Debug\dab.SGS.Core.dll
+C:\Users\me\Documents\Projects\SGS\src\libraries\dab.SGS\dab.SGS.Core.Server.Unit\bin\Debug\dab.SGS.Core.Server.dll
+C:\Users\me\Documents\Projects\SGS\src\libraries\dab.SGS\dab.SGS.Core.Server.Unit\bin\Debug\Microsoft.VisualStudio.QualityTools.UnitTestFramework.dll
+C:\Users\me\Documents\Projects\SGS\src\libraries\dab.SGS\dab.SGS.Core.Server.Unit\bin\Debug\dab.SGS.Core.Server.pdb
+C:\Users\me\Documents\Projects\SGS\src\libraries\dab.SGS\dab.SGS.Core.Server.Unit\bin\Debug\dab.SGS.Core.pdb
+C:\Users\me\Documents\Projects\SGS\src\libraries\dab.SGS\dab.SGS.Core.Server.Unit\bin\Debug\Microsoft.VisualStudio.QualityTools.UnitTestFramework.xml
+C:\Users\me\Documents\Projects\SGS\src\libraries\dab.SGS\dab.SGS.Core.Server.Unit\obj\Debug\dab.SGS.Core.Server.Unit.csprojResolveAssemblyReference.cache
+C:\Users\me\Documents\Projects\SGS\src\libraries\dab.SGS\dab.SGS.Core.Server.Unit\obj\Debug\dab.SGS.Core.Server.Unit.dll
+C:\Users\me\Documents\Projects\SGS\src\libraries\dab.SGS\dab.SGS.Core.Server.Unit\obj\Debug\dab.SGS.Core.Server.Unit.pdb

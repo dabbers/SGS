@@ -1,0 +1,7 @@
+C:\Users\me\Documents\Projects\SGS\src\libraries\dab.SGS\dab.SGS.Core.Server\bin\Debug\dab.SGS.Core.Server.dll
+C:\Users\me\Documents\Projects\SGS\src\libraries\dab.SGS\dab.SGS.Core.Server\bin\Debug\dab.SGS.Core.Server.pdb
+C:\Users\me\Documents\Projects\SGS\src\libraries\dab.SGS\dab.SGS.Core.Server\bin\Debug\dab.SGS.Core.dll
+C:\Users\me\Documents\Projects\SGS\src\libraries\dab.SGS\dab.SGS.Core.Server\bin\Debug\dab.SGS.Core.pdb
+C:\Users\me\Documents\Projects\SGS\src\libraries\dab.SGS\dab.SGS.Core.Server\obj\Debug\dab.SGS.Core.Server.csprojResolveAssemblyReference.cache
+C:\Users\me\Documents\Projects\SGS\src\libraries\dab.SGS\dab.SGS.Core.Server\obj\Debug\dab.SGS.Core.Server.dll
+C:\Users\me\Documents\Projects\SGS\src\libraries\dab.SGS\dab.SGS.Core.Server\obj\Debug\dab.SGS.Core.Server.pdb
