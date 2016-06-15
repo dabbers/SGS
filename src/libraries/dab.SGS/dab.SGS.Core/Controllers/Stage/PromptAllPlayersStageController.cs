@@ -8,7 +8,7 @@ namespace dab.SGS.Core.Controllers.Stage
 {
     public abstract class PromptAllPlayersStageController : StageController
     {
-        public PromptAllPlayersStageController(string display, TurnStages stage, Player player, Dictionary<TurnStages, TurnStages> transitions) : base(display, stage, player, transitions)
+        public PromptAllPlayersStageController(string display, TurnStages stage, Player player) : base(display, stage, player)
         {
         }
     }

@@ -13,7 +13,7 @@ namespace dab.SGS.Core.Controllers.Stage
     public class PerformControllersStageController : StageController
     {
         public List<Controller> Controllers { get; private set; }
-        public PerformControllersStageController(string display, TurnStages stage, Player player, List<Controller> controllers) : base(display, stage, player, null)
+        public PerformControllersStageController(string display, TurnStages stage, Player player, List<Controller> controllers) : base(display, stage, player)
         {
             this.Controllers = controllers;
         }
@@ -37,11 +37,6 @@ namespace dab.SGS.Core.Controllers.Stage
             context.StageControllers.Pop();
             return true;
         }
-
-        public override void NextStage()
-        {
-        }
-
         public override void Play(PlayingCard card)
         {
             throw new NotImplementedException();

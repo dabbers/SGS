@@ -49,5 +49,11 @@ namespace dab.SGS.Core
                     (this.FaceDownPlayingCards?.Count ?? 0);
             }
         }
+
+        public bool ContainsCard(PlayingCard card)
+        {
+            return this.Shield == card || this.Weapon == card || this.PlusHorse == card || this.MinusHorse == card ||
+                this.DelayedScrolls.Contains(card) || this.FaceUpPlayingCards.Contains(card) || this.FaceDownPlayingCards.Contains(card);
+        }
     }
 }

@@ -11,27 +11,16 @@ namespace dab.SGS.Core.Controllers.Stage
     {
         public TurnStages Stage { get; protected set; }
         public Player Player { get; protected set; }
-        public UserPrompt Prompt { get; protected set; }
+        public UserPrompt Prompt { get; set; }
 
-        public StageController(string display, TurnStages stage, Player player, Dictionary<TurnStages, TurnStages> transitions) : base(display)
+        public StageController(string display, TurnStages stage, Player player) : base(display)
         {
-            this.transitions = transitions;
             this.Player = player;
             this.Stage = stage;
-        }
-
-        public virtual void NextStage()
-        {
-            if (!this.transitions.ContainsKey(this.Stage)) throw new Exceptions.InvalidStageException(this.Stage);
-
-            this.Stage = this.transitions[this.Stage];
         }
 
         public abstract bool IsCardPlayable(PlayingCard card);
 
         public abstract void Play(PlayingCard card);
-
-
-        private Dictionary<TurnStages, TurnStages> transitions = null;
     }
 }

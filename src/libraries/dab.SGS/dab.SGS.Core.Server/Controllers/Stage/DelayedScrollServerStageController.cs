@@ -16,6 +16,28 @@ namespace dab.SGS.Core.Server.Controllers.Stage
 
         public override bool Perform(GameContext context)
         {
+            /*
+             *                 {
+                    // Placing the delayed scroll. We pop after it
+                    { TurnStages.Start, TurnStages.SelectTargets },
+                    { TurnStages.SelectTargets, TurnStages.End },
+
+                    // Called again to perform the judgement
+                    { TurnStages.PreJudgement, TurnStages.React },
+
+                    // If we don't have a reaction
+                    { TurnStages.React, TurnStages.NoReaction },
+
+                    // When no reaction, go to judgement
+                    { TurnStages.NoReaction, TurnStages.Judgement },
+
+                    // After judgmenet, go to end
+                    { TurnStages.Judgement, TurnStages.End },
+
+                    // Judgement was warded. Go to end.
+                    { TurnStages.Reacted, TurnStages.End }
+                }
+                */
             throw new NotImplementedException();
         }
 

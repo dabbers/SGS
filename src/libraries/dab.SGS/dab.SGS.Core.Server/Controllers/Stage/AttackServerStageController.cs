@@ -16,13 +16,22 @@ namespace dab.SGS.Core.Server.Controllers.Stage
             this.Stage = TurnStages.SelectTargets;
         }
 
-        public AttackServerStageController(string display, TurnStages stage, Player player, Dictionary<TurnStages, TurnStages> transitions) : base(stage, player, transitions)
+        public AttackServerStageController(string display, TurnStages stage, Player player) : base(stage, player)
         {
         }
         
 
         public override bool Perform(GameContext context)
         {
+            /*
+             * 
+        {
+            {TurnStages.Start, TurnStages.SelectTargets },
+            {TurnStages.SelectTargets, TurnStages.React },
+            {TurnStages.Reacted, TurnStages.End },
+            {TurnStages.NoReaction, TurnStages.End },
+        }
+        */
             switch (this.Stage)
             {
                 case TurnStages.SelectTargets:

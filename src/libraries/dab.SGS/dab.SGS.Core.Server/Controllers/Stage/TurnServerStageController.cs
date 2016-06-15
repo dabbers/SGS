@@ -26,45 +26,69 @@ namespace dab.SGS.Core.Server.Controllers.Stage
                 }
             }
 
-            switch(this.Stage)
+            /*
+             * {
+            { TurnStages.Start, TurnStages.PreJudgement },
+            { TurnStages.PreJudgement, TurnStages.PreDraw },
+            { TurnStages.PreDraw, TurnStages.Draw },
+            { TurnStages.Draw, TurnStages.Play },
+            { TurnStages.Play, TurnStages.PreDiscard },
+            { TurnStages.PreDiscard, TurnStages.Discard },
+            { TurnStages.Discard, TurnStages.End },
+            { TurnStages.End, TurnStages.Start },
+        }
+        */
+
+            switch (this.Stage)
             {
                 case TurnStages.Start:
                     break;
                 case TurnStages.PreJudgement:
-                    if (this.Player.PlayerArea.DelayedScrolls.Count >0)
+                    if (this.Player.PlayerArea.DelayedScrolls.Count > 0)
                     {
-                        this.Stage = TurnStages.PreDraw;
-
                         var card = this.Player.PlayerArea.DelayedScrolls.First();
                         this.Player.PlayerArea.DelayedScrolls.RemoveAt(0);
 
                         context.StageControllers.Push(new DelayedScrollServerStageController("Judgement", TurnStages.Start, this.Player, card));
-
-                        // This tricks our gamecontext to replay the pre-judgement phase when the delayed scroll controller is done with its thing
-                        // Logic flow: 
-                        // Turn.Perform() -> Push Delayed Scroll On Top
-                        // Delayed.Next() -> Start > SelectTarget
-                        // Delayed.Perform()... blah .... contex.Pop()
-                        // Turn.Next()    -> Start > PreJudgement
-                        //
-                        // We go Perform() (Optional PlayCard orAction()) Next() in a loop
-                        this.Stage = TurnStages.Start; 
-                        
+                    }
+                    else
+                    {
+                        this.Stage = TurnStages.PreDraw;
                     }
                     break;
                 case TurnStages.PreDraw:
-
+                    this.Stage = TurnStages.Draw;
                     break;
                 case TurnStages.Draw:
+                    this.Player.Hand.Add(context.Deck.Draw());
+                    this.Player.Hand.Add(context.Deck.Draw());
 
+                    this.Stage = TurnStages.Play;
                     break;
                 case TurnStages.Play:
-
+                    this.Prompt = new UserPrompt(UserPromptType.CardsPlayerHand | UserPromptType.Skills | UserPromptType.CardsPlayerPlayArea);
+                    this.Stage = TurnStages.Prompt;
+                    break;
+                case TurnStages.Prompt:
+                    if (this.Prompt.Cards?.Count != 0)
+                    {
+                        this.Stage = TurnStages.Play;
+                    }
+                    else
+                    {
+                        this.Stage = TurnStages.PreDiscard;
+                    }
+                    
                     break;
                 case TurnStages.PreDiscard:
-
+                    this.Stage = TurnStages.Discard;
                     break;
                 case TurnStages.Discard:
+
+                    if (this.Player.MaxHandSize < this.Player.Hand.Count)
+                    {
+
+                    }
 
                     break;
                 case TurnStages.End:

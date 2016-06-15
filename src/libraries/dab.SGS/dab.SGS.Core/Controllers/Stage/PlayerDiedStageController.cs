@@ -10,13 +10,15 @@ namespace dab.SGS.Core.Controllers.Stage
 {
     public abstract class PlayerDiedStageController : StageController
     {
-        public PlayerDiedStageController(string display, TurnStages stage, Player player) : base(display, stage, player, new Dictionary<TurnStages, TurnStages>()
+        public PlayerDiedStageController(string display, TurnStages stage, Player player) : base(display, stage, player)
         {
+            /*
+             *         {
             { TurnStages.PlayerDied, TurnStages.PlayerEliminated },
             { TurnStages.PlayerEliminated, TurnStages.End },
             { TurnStages.PlayerRevived, TurnStages.End },
-        })
-        {
+        }
+        */
         }
 
         public override bool IsCardPlayable(PlayingCard card)

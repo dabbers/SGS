@@ -9,9 +9,7 @@ namespace dab.SGS.Core.Controllers.Stage
 {
     public abstract class DuelScrollStageController : StageController
     {
-        public DuelScrollStageController(TurnStages stage, Player player) : base("Duel", stage, player, new Dictionary<TurnStages, TurnStages>()
-        {
-        })
+        public DuelScrollStageController(TurnStages stage, Player player) : base("Duel", stage, player)
         {
         }
 

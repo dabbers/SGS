@@ -10,16 +10,10 @@ namespace dab.SGS.Core.Controllers.Stage
 {
     public abstract class AttackStageController : StageController
     {
-        public AttackStageController(Player attacker) : base("Attack", TurnStages.Start, attacker, new Dictionary<TurnStages, TurnStages>()
-        {
-            {TurnStages.Start, TurnStages.SelectTargets },
-            {TurnStages.SelectTargets, TurnStages.React },
-            {TurnStages.Reacted, TurnStages.End },
-            {TurnStages.NoReaction, TurnStages.End },
-        })
+        public AttackStageController(Player attacker) : base("Attack", TurnStages.Start, attacker)
         {
         }
-        public AttackStageController(TurnStages stage, Player player, Dictionary<TurnStages, TurnStages> transitions) : base("Attack", stage, player, transitions)
+        public AttackStageController(TurnStages stage, Player player) : base("Attack", stage, player)
         {
         }
 

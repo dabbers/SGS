@@ -81,7 +81,6 @@ namespace dab.SGS.Core
 
         public UserPromptType Type { get; protected set; }
 
-
         public UserPrompt(UserPromptType type)
         {
             this.Type = type;
