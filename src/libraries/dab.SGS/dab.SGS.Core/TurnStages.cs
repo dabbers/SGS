@@ -100,7 +100,37 @@ namespace dab.SGS.Core
         /// <summary>
         /// Indicates the game has concluded
         /// </summary>
-        GameOver
+        GameOver,
+
+
+
+
+
+        // **************************************************************************************
+        // DO NOT USE THESE IN YOUR CONTROLLERS STAGES (SWITCH CASE).
+        // These are only for very specific Roles to bind into to reduce required logic checking.
+        // They will be "called" during the controllers that represent this stage.
+        // **************************************************************************************
+
+        /// <summary>
+        /// During the attack controller
+        /// </summary>
+        DuringAttack,
+
+        /// <summary>
+        /// During the scroll controller
+        /// </summary>
+        DuringScroll,
+
+        /// <summary>
+        /// During delay scroll controller
+        /// </summary>
+        DuringDelayScroll,
+
+        /// <summary>
+        /// During the player died controller
+        /// </summary>
+        DuringDying
 
     }
 }

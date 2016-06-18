@@ -7,11 +7,14 @@ using dab.SGS.Core.Cards.Playing;
 
 namespace dab.SGS.Core.Controllers.Stage
 {
+    public delegate bool IsCardPlayable(PlayingCard card);
+
     public class PromptStageController : StageController
     {
-        public PromptStageController(string display, TurnStages stage, Player player, UserPrompt prompt) : base(display, stage, player)
+        public PromptStageController(string display, TurnStages stage, Player player, UserPrompt prompt, IsCardPlayable icp = null) : base(display, stage, player)
         {
             this.Prompt = prompt;
+            this.icp = icp;
         }
 
         public override bool IsCardPlayable(PlayingCard card)
@@ -29,7 +32,11 @@ namespace dab.SGS.Core.Controllers.Stage
 
             if (this.Prompt.Type.HasFlag(UserPromptType.HoldingArea) && card.Context.HoldingArea.Cards.Contains(card)) return true;
 
-            return false;
+
+            if (this.icp != null)
+                return this.icp(card);
+            else
+                return false;
         }
 
         public override bool Perform(GameContext context)
@@ -86,7 +93,10 @@ namespace dab.SGS.Core.Controllers.Stage
 
         public override void Play(PlayingCard card)
         {
-            throw new NotImplementedException();
+            if (this.IsCardPlayable(card))
+                this.Prompt.Cards.Add(card);
         }
+
+        private IsCardPlayable icp;
     }
 }

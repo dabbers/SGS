@@ -22,12 +22,6 @@ namespace dab.SGS.Core.Controllers.Stage
 
         public override bool IsCardPlayable(PlayingCard card)
         {
-            if (this.Stage == TurnStages.React)
-            {
-                if (card.IsPlayedAsDodge()) return true;
-                else return false;
-            }
-
             return false;
         }
 

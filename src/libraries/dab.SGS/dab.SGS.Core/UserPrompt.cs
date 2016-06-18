@@ -59,7 +59,17 @@ namespace dab.SGS.Core
         /// <summary>
         /// Select from a list of options
         /// </summary>
-        Options = 1 << 8
+        Options = 1 << 8,
+
+        /// <summary>
+        /// Let the player use their shield's skill
+        /// </summary>
+        UseShieldSkill = 1 << 9,
+
+        /// <summary>
+        /// Let the player use their weapon's skill
+        /// </summary>
+        UseWeaponSkill = 1 << 10
     }
 
 
@@ -76,6 +86,11 @@ namespace dab.SGS.Core
         public int MinCards { get; set; }
         public int MaxCards { get; set; }
 
+        /// <summary>
+        /// Player must play no cards, or exactly this # of cards. If 0, this is not a restriction.
+        /// </summary>
+        public int NoneOrMax { get; set; }
+
         public string Display { get; protected set; }
         public string[] Options { get; protected set; }
 
@@ -89,7 +104,7 @@ namespace dab.SGS.Core
         {
             this.Type = type;
             // Just default to something for now. Should set by caller
-            this.MinTargets = this.MaxTargets = this.MinCards = this.MaxCards = this.MinRange = this.MaxRange = 0;
+            this.MinTargets = this.MaxTargets = this.MinCards = this.MaxCards = this.MinRange = this.MaxRange = this.NoneOrMax = 0;
         }
 
         public UserPrompt(UserPromptType type, string display, string[] options) : this(type)
