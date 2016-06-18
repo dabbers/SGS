@@ -12,6 +12,8 @@ namespace dab.SGS.Core.Server.Controllers.Stage
 {
     public class TurnServerStageController : TurnStageController
     {
+        public int AttacksRequiredForAttack = GameContext.DEFAULT_MAX_ATTACKS;
+
         public TurnServerStageController(TurnStages stage, Player start) : base("Player Turn", stage, start)
         {
         }
@@ -42,6 +44,15 @@ namespace dab.SGS.Core.Server.Controllers.Stage
             switch (this.Stage)
             {
                 case TurnStages.Start:
+                    if (this.Player.Flipped)
+                    {
+                        this.Stage = TurnStages.End;
+                    }
+                    else
+                    {
+                        this.Stage = TurnStages.PreJudgement;
+                    }
+
                     break;
                 case TurnStages.PreJudgement:
                     if (this.Player.PlayerArea.DelayedScrolls.Count > 0)
@@ -77,8 +88,7 @@ namespace dab.SGS.Core.Server.Controllers.Stage
                     else
                     {
                         this.Stage = TurnStages.PreDiscard;
-                    }
-                    
+                    }                    
                     break;
                 case TurnStages.PreDiscard:
                     this.Stage = TurnStages.Discard;
@@ -87,12 +97,40 @@ namespace dab.SGS.Core.Server.Controllers.Stage
 
                     if (this.Player.MaxHandSize < this.Player.Hand.Count)
                     {
+                        int cards = this.Player.Hand.Count - this.Player.MaxHandSize;
 
+                        context.StageControllers.Push
+                        (
+                            new PromptStageController
+                            (
+                                "Discard", 
+                                TurnStages.Start, 
+                                this.Player, 
+                                new UserPrompt(UserPromptType.CardsPlayerHand) { MinCards = cards, MaxCards = cards } 
+                            )
+                        );
                     }
 
                     break;
                 case TurnStages.End:
+                    // Cleanup
 
+                    // Reset wine/attack limits
+                    this.Player.WineInEffect = false;
+                    this.Player.Flipped = false;
+                    this.Player.WinesLeft = 1;
+                    this.Player.AttacksLeft = 1;
+                    this.attacksPlayed = 0;
+                    this.AttacksRequiredForAttack = GameContext.DEFAULT_MAX_ATTACKS;
+                    // Move turn to next player
+                    this.Player = this.Player.Right;
+                    
+                    // Go to beginnign of turn
+                    this.Stage = TurnStages.Start;
+                    break;
+
+                case TurnStages.GameOver:
+                    // What do we do here????
                     break;
                 default:
                     throw new Exceptions.InvalidStageException(this.Stage);
@@ -107,7 +145,15 @@ namespace dab.SGS.Core.Server.Controllers.Stage
 
             if (card.IsPlayedAsAttack())
             {
-                card.Context.StageControllers.Push(new AttackServerStageController(card.Owner));
+                this.AttacksRequiredForAttack += this.Prompt.Cards.Count(c => c.IsPlayedAsAttack());
+
+                var element = (card.GetPlayedAsElement() == Elemental.None ? this.Prompt.Cards.Find(p => p.IsPlayedAsAttack() && p.GetPlayedAsElement() != Elemental.None).GetPlayedAsElement() : Elemental.None);
+
+                if (this.attacksPlayed == this.AttacksRequiredForAttack)
+                {
+                    card.Context.StageControllers.Push(new AttackServerStageController(card.Owner, element));
+                }
+
             }
             else if (card.IsPlayedAsWine())
             {
@@ -133,7 +179,7 @@ namespace dab.SGS.Core.Server.Controllers.Stage
                 (
                     new PerformControllersStageController
                     (
-                        "Wine",
+                        "Peach",
                         TurnStages.Start,
                         card.Owner,
                         new List<Core.Controllers.Controller>() { new IncreaseHealthController(1) }
@@ -155,5 +201,7 @@ namespace dab.SGS.Core.Server.Controllers.Stage
                 );
             }
         }
+
+        private int attacksPlayed = 0;
     }
 }

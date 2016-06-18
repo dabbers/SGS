@@ -97,5 +97,10 @@ namespace dab.SGS.Core
         /// </summary>
         Prompt,
 
+        /// <summary>
+        /// Indicates the game has concluded
+        /// </summary>
+        GameOver
+
     }
 }

@@ -9,12 +9,14 @@ namespace dab.SGS.Core.Controllers.Stage
 {
     public class PromptStageController : StageController
     {
-        public PromptStageController(string display, TurnStages stage, Player player) : base(display, stage, player)
+        public PromptStageController(string display, TurnStages stage, Player player, UserPrompt prompt) : base(display, stage, player)
         {
+            this.Prompt = prompt;
         }
 
         public override bool IsCardPlayable(PlayingCard card)
         {
+            // Validate the card comes from the respective area
             if (this.Prompt.Type.HasFlag(UserPromptType.AllCards)) return true;
 
             if (this.Prompt.Type.HasFlag(UserPromptType.CardsPlayerHand) && card.Owner.Hand.Contains(card)) return true;
@@ -40,8 +42,37 @@ namespace dab.SGS.Core.Controllers.Stage
                     this.Stage = TurnStages.Prompt;
                     break;
                 case TurnStages.Prompt:
+                    var passed = false;
 
-                    this.Stage = TurnStages.End;
+                    if (this.Prompt.Cards.Count >= this.Prompt.MinCards && this.Prompt.Cards.Count <= this.Prompt.MaxCards)
+                    {
+                        passed = true;
+                    }
+                    else if (this.Prompt.Targets.Count >= this.Prompt.MinTargets && this.Prompt.Targets.Count <= this.Prompt.MaxTargets)
+                    {
+                        passed = true;
+                    }
+                    else
+                    {
+                        if (this.Prompt.Targets.Count > 0)
+                        {
+                            passed = true;
+
+                            foreach(var t in this.Prompt.Targets)
+                            {
+                                var dist = this.Player.GetDistance(t);
+                                if (dist < this.Prompt.MinRange || dist > this.Prompt.MaxRange)
+                                {
+                                    passed = false;
+                                }
+                            }
+                        }
+                    }
+
+                    if (passed)
+                    {
+                        this.Stage = TurnStages.End;
+                    }
                     break;
                 case TurnStages.End:
 

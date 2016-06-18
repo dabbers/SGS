@@ -81,9 +81,15 @@ namespace dab.SGS.Core
 
         public UserPromptType Type { get; protected set; }
 
+        /// <summary>
+        /// Create a user prompt of passed in types. Make sure to set min/max requirements if needed.
+        /// </summary>
+        /// <param name="type"></param>
         public UserPrompt(UserPromptType type)
         {
             this.Type = type;
+            // Just default to something for now. Should set by caller
+            this.MinTargets = this.MaxTargets = this.MinCards = this.MaxCards = this.MinRange = this.MaxRange = 0;
         }
 
         public UserPrompt(UserPromptType type, string display, string[] options) : this(type)

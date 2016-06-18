@@ -11,12 +11,7 @@ namespace dab.SGS.Core.Server.Controllers.Stage
 {
     public class AttackServerStageController : AttackStageController
     {
-        public AttackServerStageController(Player attacker) : base(attacker)
-        {
-            this.Stage = TurnStages.SelectTargets;
-        }
-
-        public AttackServerStageController(string display, TurnStages stage, Player player) : base(stage, player)
+        public AttackServerStageController(Player attacker, Elemental element) : base(attacker, element)
         {
         }
         
@@ -34,8 +29,17 @@ namespace dab.SGS.Core.Server.Controllers.Stage
         */
             switch (this.Stage)
             {
+                case TurnStages.Start:
+                    this.Stage = TurnStages.Start;
+                    break;
                 case TurnStages.SelectTargets:
-
+                    this.Prompt = new UserPrompt(UserPromptType.TargetRangeMN)
+                    {
+                        MinRange = 1,
+                        MaxRange = this.Player.GetAttackRange(),
+                        MinTargets = 1,
+                        MaxTargets = 1
+                    };
                     break;
                 case TurnStages.React:
 

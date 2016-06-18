@@ -152,6 +152,25 @@ namespace dab.SGS.Core.Cards.Playing
         {
             return this.IsPlayedAsType(typeof(Basics.AttackBasicPlayingCard));
         }
+        public Basics.Elemental GetPlayedAsElement()
+        {
+            if (!this.IsPlayedAsAttack()) throw new Exception("TODO: Replace this exception. Cannot get element type for non attack");
+
+            if (this is Basics.AttackBasicPlayingCard)
+            {
+                return ((Basics.AttackBasicPlayingCard)this).Element;
+            }
+            else
+            {
+                return ((Basics.AttackBasicPlayingCard)this.BeingUsedAs).Element;
+            }
+        }
+        public bool IsPlayedAsElementalAttack(Basics.Elemental element)
+        {
+            if (!this.IsPlayedAsAttack()) return false;
+
+            return this.GetPlayedAsElement() == element;
+        }
         public bool IsPlayedAsDodge()
         {
             return this.IsPlayedAsType(typeof(Basics.DodgeBasicPlayingCard));

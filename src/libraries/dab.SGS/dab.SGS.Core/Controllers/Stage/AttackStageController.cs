@@ -10,12 +10,15 @@ namespace dab.SGS.Core.Controllers.Stage
 {
     public abstract class AttackStageController : StageController
     {
-        public AttackStageController(Player attacker) : base("Attack", TurnStages.Start, attacker)
+        public int DodgesRequired { get; set; }
+        public Elemental Elemental { get; set; }
+
+        public AttackStageController(Player attacker, Elemental element, int dodgesRequired = 1) : base("Attack", TurnStages.Start, attacker)
         {
+            this.DodgesRequired = dodgesRequired;
+            this.Elemental = element;
         }
-        public AttackStageController(TurnStages stage, Player player) : base("Attack", stage, player)
-        {
-        }
+
 
         public override bool IsCardPlayable(PlayingCard card)
         {
