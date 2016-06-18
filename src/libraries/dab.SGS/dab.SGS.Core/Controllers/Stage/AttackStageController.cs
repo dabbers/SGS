@@ -12,11 +12,13 @@ namespace dab.SGS.Core.Controllers.Stage
     {
         public int DodgesRequired { get; set; }
         public Elemental Elemental { get; set; }
+        public int DamageCaused { get; set; }
 
-        public AttackStageController(Player attacker, Elemental element, int dodgesRequired = 1) : base("Attack", TurnStages.Start, attacker)
+        public AttackStageController(Player attacker, Elemental element, int damage = 1, int dodgesRequired = 1) : base("Attack", TurnStages.Start, attacker)
         {
             this.DodgesRequired = dodgesRequired;
             this.Elemental = element;
+            this.DamageCaused = damage;
         }
 
 

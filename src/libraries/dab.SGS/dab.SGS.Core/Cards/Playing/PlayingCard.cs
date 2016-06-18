@@ -81,18 +81,15 @@ namespace dab.SGS.Core.Cards.Playing
             this.color = color;
         }
 
-        public virtual bool Play()
+        public bool Play()
         {
             if (!this.IsPlayable() && !this.BeingUsedAsIsPlayable()) throw new Exceptions.InvalidCardSelectionException(this.Context.CurrentTurnStage);
 
-            //if (this.IsPlayable())
-            //    return this.playAction(sender, this.Actions);
-            //else
-            //    return this.BeingUsedAs.Play();
+            Context.StageControllers.Peek().Play(this);
             return true;
         }
 
-        public virtual bool IsPlayable()
+        public bool IsPlayable()
         {
             return this.Context.StageControllers.Peek().IsCardPlayable(this);
         }

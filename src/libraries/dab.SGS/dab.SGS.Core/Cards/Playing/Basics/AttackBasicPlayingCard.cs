@@ -23,14 +23,6 @@ namespace dab.SGS.Core.Cards.Playing.Basics
         {
         }
 
-        public override bool Play()
-        {
-            // Devnote: is there a scenario where we don't want this?
-            //this.Context.CurrentPlayStage.Cards.Activator = this;
-
-            return base.Play();
-        }
-
         //public new static PlayingCard GetCardFromJson(dynamic obj)
         //{
         //    var color = (PlayingCardColor)Enum.Parse(typeof(PlayingCardColor), obj.PlayingCardColor.ToString());
@@ -40,11 +32,6 @@ namespace dab.SGS.Core.Cards.Playing.Basics
             
         //    return new AttackBasicPlayingCard(color, suite, details, element);
         //}
-
-        public override bool IsPlayable()
-        {
-            return this.Context.StageControllers.Peek().IsCardPlayable(this);
-        }
 
         public override string ToString()
         {

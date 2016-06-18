@@ -12,10 +12,5 @@ namespace dab.SGS.Core.Cards.Playing.Scrolls
             : base(color, suite, "Contentment", details)
         {
         }
-
-        public override bool IsPlayable()
-        {
-            return this.Context.CurrentTurnStage == TurnStages.Play;
-        }
     }
 }

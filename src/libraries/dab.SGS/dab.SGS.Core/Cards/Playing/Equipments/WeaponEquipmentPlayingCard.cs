@@ -17,25 +17,6 @@ namespace dab.SGS.Core.Cards.Playing.Equipments
         {
         }
 
-        public override bool Play()
-        {
-            if (this.Owner.PlayerArea.Weapon != null)
-            {
-                //this.Owner.PlayerArea.Weapon.RemoveAction(sender);
-            }
-
-            this.Context.Deck.DiscardPile.Add(this.Owner.PlayerArea.Weapon);
-            this.Owner.PlayerArea.Weapon = this;
-            this.Owner.Hand.Remove(this);
-
-            return true;
-        }
-
-        public override bool IsPlayable()
-        {
-            return this.Context.CurrentTurnStage == TurnStages.Play;
-        }
-
         public void AttackOccured()
         {
             //if (this.Actions == null) return;

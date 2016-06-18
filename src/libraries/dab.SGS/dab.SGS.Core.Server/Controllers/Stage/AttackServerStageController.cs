@@ -12,7 +12,7 @@ namespace dab.SGS.Core.Server.Controllers.Stage
 {
     public class AttackServerStageController : AttackStageController
     {
-        public AttackServerStageController(Player attacker, Elemental element) : base(attacker, element)
+        public AttackServerStageController(Player attacker, Elemental element, int damage = 1, int dodgesRequired = 1) : base(attacker, element, damage, dodgesRequired)
         {
         }
         
@@ -77,10 +77,14 @@ namespace dab.SGS.Core.Server.Controllers.Stage
                         {
                             NoneOrMax = this.DodgesRequired
                         };
+                        var target = this.targetedPrompt.Targets.First();
 
-                        context.StageControllers.Push(new PromptStageController("Target", TurnStages.Start, this.targetedPrompt.Targets.First(), this.Prompt, this.IsCardPlayable));
+                        if (this.Player.IsPlayerInAttackRange(target))
+                        {
+                            context.StageControllers.Push(new PromptStageController("Target", TurnStages.Start, target, this.Prompt, this.IsCardPlayable));
 
-                        this.Stage = TurnStages.Reacted;
+                            this.Stage = TurnStages.Reacted;
+                        }
                     }
                     else
                     {
@@ -115,7 +119,7 @@ namespace dab.SGS.Core.Server.Controllers.Stage
 
                     break;
                 case TurnStages.End:
-
+                    this.Player.AttacksLeft--;
                     break;
             }
 
