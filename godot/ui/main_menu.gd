@@ -10,17 +10,22 @@ var status: Label
 
 
 func _ready() -> void:
+	theme = SgsTheme.get_theme()
+	add_child(SgsTheme.make_background())
 	var center := CenterContainer.new()
 	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(center)
+	var panel := PanelContainer.new()
+	center.add_child(panel)
 	var box := VBoxContainer.new()
-	box.custom_minimum_size = Vector2(420, 0)
+	box.custom_minimum_size = Vector2(460, 0)
 	box.add_theme_constant_override("separation", 12)
-	center.add_child(box)
+	panel.add_child(box)
 
 	var title := Label.new()
 	title.text = "SGS Card Engine"
-	title.add_theme_font_size_override("font_size", 40)
+	title.theme_type_variation = "TitleLabel"
+	title.add_theme_font_size_override("font_size", 44)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(title)
 
@@ -42,6 +47,7 @@ func _ready() -> void:
 	row.add_child(players_spin)
 
 	var solo := Button.new()
+	solo.theme_type_variation = "PrimaryButton"
 	solo.text = "Play vs bots"
 	solo.custom_minimum_size.y = 56
 	solo.pressed.connect(_on_solo)
@@ -84,6 +90,8 @@ func _ready() -> void:
 		host_btn.disabled = true
 		join_btn.disabled = true
 		status.text = "Online play is not available in the browser build yet. Play vs bots works."
+		if _url_param("auto") == "1":
+			_on_solo.call_deferred()
 	if not game.last_result.is_empty():
 		status.text = "Last game: %s side won" % game.last_result.get("winner", "?")
 
@@ -91,8 +99,20 @@ func _ready() -> void:
 func _on_solo() -> void:
 	var s := LocalSession.new(name_edit.text)
 	game.set_session(s)
-	s.start_game({"players": int(players_spin.value), "decks": ["standard", "expansion"]})
+	var cfg := {"players": int(players_spin.value), "decks": ["standard", "expansion"]}
+	var seed_param := _url_param("seed")
+	if seed_param != "":
+		cfg["seed"] = int(seed_param)
+	s.start_game(cfg)
 	get_tree().change_scene_to_file("res://ui/table.tscn")
+
+
+## Query-string parameter in web builds (e.g. ?seed=42&auto=1), "" elsewhere.
+func _url_param(key: String) -> String:
+	if not OS.has_feature("web"):
+		return ""
+	var v = JavaScriptBridge.eval("new URLSearchParams(window.location.search).get('%s') || ''" % key)
+	return str(v) if v != null else ""
 
 
 func _on_host() -> void:

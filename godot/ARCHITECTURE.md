@@ -115,6 +115,20 @@ of effort: (1) host the `Linux Server` export on a VPS and have everyone join
 it; (2) add a tiny relay; (3) swap the peer for `WebRTCMultiplayerPeer`
 (same RPC code) with a signalling server. The session API does not change.
 
+## Table UI (`ui/`)
+
+- `theme_builder.gd` builds the Theme in code (Kenney 9-slice buttons,
+  parchment and lacquer panels, DejaVu fonts) and the procedural background.
+- `card_view.gd` draws a card from its def: type band, tinted icon, name,
+  suit/rank; a Kenney back when face down. `seat_view.gd` is a player tile.
+- `fx_layer.gd` is a full-screen overlay with an animation queue: flying
+  cards, dashes at targets, floating damage/heal text, shakes, flashes and
+  turn banners. Events enqueue animations; the table holds each new snapshot
+  and prompt until the queue drains, so what you see matches what just
+  happened. Long queues play faster.
+- Icons are white SVGs from game-icons.net so they can be tinted both ways
+  (dark on parchment, gold on the dark panels).
+
 ## Adding a new game
 
 1. Subclass `GameRules`: build defs, set up zones/players, write `play`.

@@ -46,7 +46,7 @@ func test_table_scene_renders_from_session() -> void:
 	tree.root.add_child(table)
 	await frames(2)
 	assert_true(table.hand_row.get_child_count() >= 4, "hand rendered (%d cards)" % table.hand_row.get_child_count())
-	assert_eq(table.seat_panels.size(), 3, "three opponents rendered")
+	assert_eq(table.seat_views.size(), 3, "three opponents rendered")
 	assert_true(s.pending != null and s.pending.player == 0, "a prompt for me is pending")
 	assert_eq(table.pass_btn.visible, s.pending.can_pass, "pass button follows the prompt")
 	# Tap through: end my turn, then answer whatever comes (discard prompts,

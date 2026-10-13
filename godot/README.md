@@ -36,11 +36,22 @@ identifier and team id in Project → Export, then export the Xcode project and
 build/sign from Xcode (Apple's signing step cannot be done from Godot alone).
 GDScript was chosen over C# because its iOS export path is the mature one.
 
+## Art and credits
+
+Card and role icons are from [game-icons.net](https://game-icons.net)
+(CC BY 3.0); card backs and buttons from [Kenney](https://kenney.nl) (CC0);
+fonts are DejaVu. Per-file attribution is in `ui/assets/CREDITS.md` and
+`ui/assets/icons/AUTHORS.txt`. The theme, card faces, seat tiles and table
+background are built in code (`ui/theme_builder.gd`, `ui/card_view.gd`,
+`ui/seat_view.gd`); animations live in `ui/fx_layer.gd`.
+
 ## Web build
 
 `export_presets.cfg` has a thread-less **Web** preset (no cross-origin
 isolation headers needed). A playable build is at https://preview.dab.im/sgs/;
-`tools/README.md` explains how it is packaged and how to update it. Online
+`tools/README.md` explains how it is packaged and how to update it.
+Query parameters: `?seed=42` for a reproducible game, `?auto=1` to start a
+4-player bot game immediately (handy for screenshots and bug reports). Online
 play is disabled in the browser build because ENet needs UDP.
 
 ## Multiplayer

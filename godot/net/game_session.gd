@@ -20,6 +20,7 @@ var known_cards: Dictionary = {}          ## card id -> card dict, everything we
 var pending: Prompt = null
 var is_host: bool = false
 var lobby: Array = []
+var event_history: Array = []           ## every event received, for late-opened views
 
 
 func submit(prompt_id: int, response: Dictionary) -> void:
@@ -44,6 +45,7 @@ func _apply_sync(snap: Dictionary, prompt_dict: Variant, events: Array) -> void:
 	for ev in events:
 		for cid in ev.get("known_cards", {}):
 			known_cards[int(cid)] = ev["known_cards"][cid]
+		event_history.append(ev)
 		event_received.emit(ev)
 	synced.emit(snap)
 	if prompt_dict is Dictionary and not prompt_dict.is_empty():

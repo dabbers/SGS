@@ -65,6 +65,9 @@ func _instantiate_autoloads() -> void:
 		var script = load(path)
 		if script == null:
 			continue
+		var node_name := key.trim_prefix("autoload/")
+		if root.has_node(node_name):
+			continue   # already created by the engine
 		var node: Node = script.new()
-		node.name = key.trim_prefix("autoload/")
+		node.name = node_name
 		root.add_child(node)
