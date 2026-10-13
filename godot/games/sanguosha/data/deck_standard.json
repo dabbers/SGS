@@ -1,0 +1,530 @@
+{
+ "id": "standard",
+ "cards": [
+  {
+   "def": "strike",
+   "suit": "diamond",
+   "rank": 6
+  },
+  {
+   "def": "strike",
+   "suit": "diamond",
+   "rank": 7
+  },
+  {
+   "def": "strike",
+   "suit": "diamond",
+   "rank": 8
+  },
+  {
+   "def": "strike",
+   "suit": "diamond",
+   "rank": 9
+  },
+  {
+   "def": "strike",
+   "suit": "diamond",
+   "rank": 10
+  },
+  {
+   "def": "strike",
+   "suit": "diamond",
+   "rank": 13
+  },
+  {
+   "def": "strike",
+   "suit": "spade",
+   "rank": 7
+  },
+  {
+   "def": "strike",
+   "suit": "spade",
+   "rank": 8
+  },
+  {
+   "def": "strike",
+   "suit": "spade",
+   "rank": 8
+  },
+  {
+   "def": "strike",
+   "suit": "spade",
+   "rank": 9
+  },
+  {
+   "def": "strike",
+   "suit": "spade",
+   "rank": 9
+  },
+  {
+   "def": "strike",
+   "suit": "spade",
+   "rank": 10
+  },
+  {
+   "def": "strike",
+   "suit": "spade",
+   "rank": 10
+  },
+  {
+   "def": "strike",
+   "suit": "heart",
+   "rank": 10
+  },
+  {
+   "def": "strike",
+   "suit": "heart",
+   "rank": 10
+  },
+  {
+   "def": "strike",
+   "suit": "heart",
+   "rank": 11
+  },
+  {
+   "def": "strike",
+   "suit": "club",
+   "rank": 2
+  },
+  {
+   "def": "strike",
+   "suit": "club",
+   "rank": 3
+  },
+  {
+   "def": "strike",
+   "suit": "club",
+   "rank": 4
+  },
+  {
+   "def": "strike",
+   "suit": "club",
+   "rank": 5
+  },
+  {
+   "def": "strike",
+   "suit": "club",
+   "rank": 6
+  },
+  {
+   "def": "strike",
+   "suit": "club",
+   "rank": 7
+  },
+  {
+   "def": "strike",
+   "suit": "club",
+   "rank": 8
+  },
+  {
+   "def": "strike",
+   "suit": "club",
+   "rank": 8
+  },
+  {
+   "def": "strike",
+   "suit": "club",
+   "rank": 9
+  },
+  {
+   "def": "strike",
+   "suit": "club",
+   "rank": 9
+  },
+  {
+   "def": "strike",
+   "suit": "club",
+   "rank": 10
+  },
+  {
+   "def": "strike",
+   "suit": "club",
+   "rank": 10
+  },
+  {
+   "def": "strike",
+   "suit": "club",
+   "rank": 11
+  },
+  {
+   "def": "strike",
+   "suit": "club",
+   "rank": 11
+  },
+  {
+   "def": "dodge",
+   "suit": "diamond",
+   "rank": 2
+  },
+  {
+   "def": "dodge",
+   "suit": "diamond",
+   "rank": 2
+  },
+  {
+   "def": "dodge",
+   "suit": "diamond",
+   "rank": 3
+  },
+  {
+   "def": "dodge",
+   "suit": "diamond",
+   "rank": 4
+  },
+  {
+   "def": "dodge",
+   "suit": "diamond",
+   "rank": 5
+  },
+  {
+   "def": "dodge",
+   "suit": "diamond",
+   "rank": 6
+  },
+  {
+   "def": "dodge",
+   "suit": "diamond",
+   "rank": 7
+  },
+  {
+   "def": "dodge",
+   "suit": "diamond",
+   "rank": 8
+  },
+  {
+   "def": "dodge",
+   "suit": "diamond",
+   "rank": 9
+  },
+  {
+   "def": "dodge",
+   "suit": "diamond",
+   "rank": 10
+  },
+  {
+   "def": "dodge",
+   "suit": "diamond",
+   "rank": 11
+  },
+  {
+   "def": "dodge",
+   "suit": "diamond",
+   "rank": 11
+  },
+  {
+   "def": "dodge",
+   "suit": "heart",
+   "rank": 2
+  },
+  {
+   "def": "dodge",
+   "suit": "heart",
+   "rank": 2
+  },
+  {
+   "def": "dodge",
+   "suit": "heart",
+   "rank": 13
+  },
+  {
+   "def": "peach",
+   "suit": "heart",
+   "rank": 3
+  },
+  {
+   "def": "peach",
+   "suit": "heart",
+   "rank": 4
+  },
+  {
+   "def": "peach",
+   "suit": "heart",
+   "rank": 7
+  },
+  {
+   "def": "peach",
+   "suit": "heart",
+   "rank": 8
+  },
+  {
+   "def": "peach",
+   "suit": "heart",
+   "rank": 9
+  },
+  {
+   "def": "peach",
+   "suit": "heart",
+   "rank": 12
+  },
+  {
+   "def": "peach",
+   "suit": "heart",
+   "rank": 6
+  },
+  {
+   "def": "peach",
+   "suit": "diamond",
+   "rank": 12
+  },
+  {
+   "def": "lightning",
+   "suit": "diamond",
+   "rank": 1
+  },
+  {
+   "def": "lightning",
+   "suit": "diamond",
+   "rank": 12
+  },
+  {
+   "def": "contentment",
+   "suit": "club",
+   "rank": 6
+  },
+  {
+   "def": "contentment",
+   "suit": "spade",
+   "rank": 6
+  },
+  {
+   "def": "contentment",
+   "suit": "heart",
+   "rank": 6
+  },
+  {
+   "def": "negate",
+   "suit": "diamond",
+   "rank": 12
+  },
+  {
+   "def": "negate",
+   "suit": "spade",
+   "rank": 11
+  },
+  {
+   "def": "negate",
+   "suit": "club",
+   "rank": 12
+  },
+  {
+   "def": "negate",
+   "suit": "club",
+   "rank": 13
+  },
+  {
+   "def": "borrowed_sword",
+   "suit": "club",
+   "rank": 12
+  },
+  {
+   "def": "borrowed_sword",
+   "suit": "club",
+   "rank": 13
+  },
+  {
+   "def": "harvest",
+   "suit": "heart",
+   "rank": 3
+  },
+  {
+   "def": "harvest",
+   "suit": "heart",
+   "rank": 4
+  },
+  {
+   "def": "windfall",
+   "suit": "heart",
+   "rank": 7
+  },
+  {
+   "def": "windfall",
+   "suit": "heart",
+   "rank": 8
+  },
+  {
+   "def": "windfall",
+   "suit": "heart",
+   "rank": 9
+  },
+  {
+   "def": "windfall",
+   "suit": "heart",
+   "rank": 11
+  },
+  {
+   "def": "duel",
+   "suit": "diamond",
+   "rank": 1
+  },
+  {
+   "def": "duel",
+   "suit": "spade",
+   "rank": 1
+  },
+  {
+   "def": "duel",
+   "suit": "club",
+   "rank": 1
+  },
+  {
+   "def": "peach_garden",
+   "suit": "heart",
+   "rank": 1
+  },
+  {
+   "def": "barbarians",
+   "suit": "spade",
+   "rank": 7
+  },
+  {
+   "def": "barbarians",
+   "suit": "spade",
+   "rank": 7
+  },
+  {
+   "def": "barbarians",
+   "suit": "spade",
+   "rank": 13
+  },
+  {
+   "def": "arrows",
+   "suit": "heart",
+   "rank": 1
+  },
+  {
+   "def": "snatch",
+   "suit": "diamond",
+   "rank": 3
+  },
+  {
+   "def": "snatch",
+   "suit": "diamond",
+   "rank": 4
+  },
+  {
+   "def": "snatch",
+   "suit": "spade",
+   "rank": 3
+  },
+  {
+   "def": "snatch",
+   "suit": "spade",
+   "rank": 4
+  },
+  {
+   "def": "snatch",
+   "suit": "spade",
+   "rank": 11
+  },
+  {
+   "def": "dismantle",
+   "suit": "spade",
+   "rank": 3
+  },
+  {
+   "def": "dismantle",
+   "suit": "spade",
+   "rank": 4
+  },
+  {
+   "def": "dismantle",
+   "suit": "spade",
+   "rank": 12
+  },
+  {
+   "def": "horse_plus",
+   "suit": "heart",
+   "rank": 13
+  },
+  {
+   "def": "horse_plus",
+   "suit": "club",
+   "rank": 5
+  },
+  {
+   "def": "horse_plus",
+   "suit": "spade",
+   "rank": 5
+  },
+  {
+   "def": "horse_minus",
+   "suit": "heart",
+   "rank": 5
+  },
+  {
+   "def": "horse_minus",
+   "suit": "diamond",
+   "rank": 13
+  },
+  {
+   "def": "horse_minus",
+   "suit": "spade",
+   "rank": 13
+  },
+  {
+   "def": "crossbow",
+   "suit": "diamond",
+   "rank": 1
+  },
+  {
+   "def": "crossbow",
+   "suit": "club",
+   "rank": 1
+  },
+  {
+   "def": "ice_sword",
+   "suit": "spade",
+   "rank": 2
+  },
+  {
+   "def": "black_pommel",
+   "suit": "spade",
+   "rank": 6
+  },
+  {
+   "def": "double_swords",
+   "suit": "spade",
+   "rank": 2
+  },
+  {
+   "def": "axe",
+   "suit": "diamond",
+   "rank": 5
+  },
+  {
+   "def": "green_dragon",
+   "suit": "spade",
+   "rank": 5
+  },
+  {
+   "def": "serpent_spear",
+   "suit": "spade",
+   "rank": 12
+  },
+  {
+   "def": "sky_scorcher",
+   "suit": "diamond",
+   "rank": 12
+  },
+  {
+   "def": "kylin_bow",
+   "suit": "heart",
+   "rank": 5
+  },
+  {
+   "def": "eight_trigrams",
+   "suit": "club",
+   "rank": 2
+  },
+  {
+   "def": "eight_trigrams",
+   "suit": "spade",
+   "rank": 2
+  },
+  {
+   "def": "black_shield",
+   "suit": "club",
+   "rank": 2
+  }
+ ]
+}
