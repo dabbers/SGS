@@ -36,6 +36,13 @@ identifier and team id in Project → Export, then export the Xcode project and
 build/sign from Xcode (Apple's signing step cannot be done from Godot alone).
 GDScript was chosen over C# because its iOS export path is the mature one.
 
+## Web build
+
+`export_presets.cfg` has a thread-less **Web** preset (no cross-origin
+isolation headers needed). A playable build is at https://preview.dab.im/sgs/;
+`tools/README.md` explains how it is packaged and how to update it. Online
+play is disabled in the browser build because ENet needs UDP.
+
 ## Multiplayer
 
 Server-authoritative. The host (a player's phone, or the headless
