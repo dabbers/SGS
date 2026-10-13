@@ -79,6 +79,11 @@ func _ready() -> void:
 	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(status)
+	if OS.has_feature("web"):
+		# ENet needs UDP; browsers only get WebSocket/WebRTC. Solo play works.
+		host_btn.disabled = true
+		join_btn.disabled = true
+		status.text = "Online play is not available in the browser build yet. Play vs bots works."
 	if not game.last_result.is_empty():
 		status.text = "Last game: %s side won" % game.last_result.get("winner", "?")
 
