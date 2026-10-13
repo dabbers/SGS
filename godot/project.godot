@@ -26,7 +26,7 @@ window/stretch/aspect="expand"
 [gui]
 
 theme/custom_font="res://ui/fonts/DejaVuSans.ttf"
-theme/default_font_size=22
+theme/default_theme_scale=1.4
 
 [input_devices]
 
