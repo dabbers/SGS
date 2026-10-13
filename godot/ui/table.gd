@@ -11,6 +11,8 @@ var seats_row: HBoxContainer
 var seat_panels: Dictionary = {}   ## seat -> Button
 var log_box: RichTextLabel
 var prompt_title: Label
+var prompt_help: Label
+var card_info: Label
 var option_row: HFlowContainer
 var choice_row: HBoxContainer      ## prompt cards not in my hand (other players' cards, harvest pool)
 var hand_row: HBoxContainer
@@ -60,7 +62,7 @@ func _build() -> void:
 	add_child(root)
 
 	var top_scroll := ScrollContainer.new()
-	top_scroll.custom_minimum_size.y = 150
+	top_scroll.custom_minimum_size.y = 190
 	top_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
 	top_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	root.add_child(top_scroll)
@@ -74,6 +76,8 @@ func _build() -> void:
 	log_box = RichTextLabel.new()
 	log_box.bbcode_enabled = true
 	log_box.scroll_following = true
+	log_box.add_theme_font_size_override("normal_font_size", 19)
+	log_box.add_theme_font_size_override("bold_font_size", 19)
 	log_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	log_box.size_flags_stretch_ratio = 1.2
 	middle.add_child(log_box)
@@ -82,8 +86,16 @@ func _build() -> void:
 	middle.add_child(prompt_box)
 	prompt_title = Label.new()
 	prompt_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	prompt_title.add_theme_font_size_override("font_size", 20)
+	prompt_title.add_theme_font_size_override("font_size", 27)
 	prompt_box.add_child(prompt_title)
+	prompt_help = Label.new()
+	prompt_help.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	prompt_help.add_theme_color_override("font_color", Color(0.85, 0.85, 0.75))
+	prompt_box.add_child(prompt_help)
+	card_info = Label.new()
+	card_info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	card_info.add_theme_color_override("font_color", Color(1.0, 0.95, 0.7))
+	prompt_box.add_child(card_info)
 	option_row = HFlowContainer.new()
 	prompt_box.add_child(option_row)
 	var choice_scroll := ScrollContainer.new()
@@ -97,17 +109,17 @@ func _build() -> void:
 	prompt_box.add_child(btn_row)
 	confirm_btn = Button.new()
 	confirm_btn.text = "Confirm"
-	confirm_btn.custom_minimum_size = Vector2(140, 52)
+	confirm_btn.custom_minimum_size = Vector2(220, 64)
 	confirm_btn.pressed.connect(_on_confirm)
 	btn_row.add_child(confirm_btn)
 	pass_btn = Button.new()
 	pass_btn.text = "Pass"
-	pass_btn.custom_minimum_size = Vector2(140, 52)
+	pass_btn.custom_minimum_size = Vector2(160, 64)
 	pass_btn.pressed.connect(_on_pass)
 	btn_row.add_child(pass_btn)
 	var leave_btn := Button.new()
 	leave_btn.text = "Leave"
-	leave_btn.custom_minimum_size = Vector2(100, 52)
+	leave_btn.custom_minimum_size = Vector2(110, 64)
 	leave_btn.pressed.connect(_leave)
 	btn_row.add_child(leave_btn)
 
@@ -118,7 +130,7 @@ func _build() -> void:
 	my_equip = Label.new()
 	bottom.add_child(my_equip)
 	var hand_scroll := ScrollContainer.new()
-	hand_scroll.custom_minimum_size.y = 150
+	hand_scroll.custom_minimum_size.y = 196
 	hand_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	bottom.add_child(hand_scroll)
 	hand_row = HBoxContainer.new()
@@ -178,7 +190,7 @@ func _render_seats(snap: Dictionary) -> void:
 		var p: Dictionary = players[(me + i) % n]
 		var seat := int(p["id"])
 		var b := Button.new()
-		b.custom_minimum_size = Vector2(190, 140)
+		b.custom_minimum_size = Vector2(250, 180)
 		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		b.text = _seat_text(snap, p)
 		b.disabled = not p["alive"]
@@ -263,6 +275,8 @@ func _set_prompt(p: Prompt) -> void:
 		_refresh_selection_styles()
 		return
 	prompt_title.text = p.title
+	prompt_help.text = _help_for(p)
+	card_info.text = ""
 	pass_btn.visible = p.can_pass
 	pass_btn.text = "End turn" if p.kind == Prompt.KIND_PLAY else "Pass"
 	confirm_btn.visible = p.kind != Prompt.KIND_CONFIRM and p.kind != Prompt.KIND_CHOOSE_OPTION
@@ -285,6 +299,7 @@ func _set_prompt(p: Prompt) -> void:
 
 
 func _on_card_pressed(cid: int) -> void:
+	_show_card_info(cid)
 	var p := session.pending
 	if p == null or not p.cards.has(cid):
 		return
@@ -294,11 +309,19 @@ func _on_card_pressed(cid: int) -> void:
 		if selected_cards.size() >= maxi(p.max_cards, 1):
 			selected_cards.pop_front()
 		selected_cards.append(cid)
-	# Single-card prompts submit on tap for speed.
-	if p.max_cards <= 1 and p.kind != Prompt.KIND_PLAY and _current_response_valid():
-		_on_confirm()
-		return
 	_refresh_selection_styles()
+
+
+func _show_card_info(cid: int) -> void:
+	var info := session.card_info(cid)
+	if not info.has("def"):
+		card_info.text = "A face-down card."
+		return
+	var d: Dictionary = defs.get(info["def"], {})
+	var kind: String = d.get("type", "")
+	if d.get("subtype", "") in ["weapon", "armor", "horse_plus", "horse_minus", "delayed"]:
+		kind = str(d.get("subtype", "")).replace("_plus", " +1").replace("_minus", " -1").replace("delayed", "delayed trick")
+	card_info.text = "%s (%s, %s): %s" % [d.get("name", "?"), kind, _card_name(cid).split(" ")[-1], d.get("text", "")]
 
 
 func _on_seat_pressed(seat: int) -> void:
@@ -311,9 +334,6 @@ func _on_seat_pressed(seat: int) -> void:
 		if selected_players.size() >= maxi(p.max_players, 1):
 			selected_players.pop_front()
 		selected_players.append(seat)
-	if p.max_players <= 1 and _current_response_valid():
-		_on_confirm()
-		return
 	_refresh_selection_styles()
 
 
@@ -351,13 +371,57 @@ func _refresh_selection_styles() -> void:
 		for cb in row.get_children():
 			if cb is CardButton:
 				cb.selected_card = selected_cards.has(cb.card_id)
-				cb.disabled = p == null or not p.cards.has(cb.card_id)
+				cb.playable = p != null and p.cards.has(cb.card_id)
 	for seat in seat_panels:
 		var b: Button = seat_panels[seat]
 		var selectable := p != null and p.players.has(seat)
 		b.disabled = not selectable and p != null and not p.players.is_empty()
 		b.modulate = Color(0.7, 1.0, 0.7) if selected_players.has(seat) else (Color(1, 1, 0.85) if selectable else Color.WHITE)
 	confirm_btn.disabled = not _current_response_valid()
+	confirm_btn.text = _confirm_label(p)
+
+
+func _confirm_label(p: Prompt) -> String:
+	if p == null:
+		return "Confirm"
+	if not selected_players.is_empty():
+		return "Target " + ", ".join(selected_players.map(func(s): return _name(s)))
+	if not selected_cards.is_empty():
+		var names := selected_cards.map(func(c): return defs.get(session.card_info(c).get("def", ""), {}).get("name", "card"))
+		match p.kind:
+			Prompt.KIND_PLAY:
+				return "Play " + names[0]
+			_:
+				if p.data.get("discard", false) or p.title.begins_with("Discard"):
+					return "Discard %d" % selected_cards.size() if selected_cards.size() > 1 else "Discard " + names[0]
+				return "Use " + names[0] if selected_cards.size() == 1 else "Confirm %d cards" % selected_cards.size()
+	match p.kind:
+		Prompt.KIND_PLAY:
+			return "Tap a card"
+		Prompt.KIND_CHOOSE_PLAYERS:
+			return "Tap a player"
+		_:
+			return "Tap a card"
+
+
+func _help_for(p: Prompt) -> String:
+	match p.kind:
+		Prompt.KIND_PLAY:
+			return "Tap a card to read it. Highlighted cards can be played now: tap one, then press Play. Skills appear as buttons. End turn when you are done."
+		Prompt.KIND_CHOOSE_PLAYERS:
+			var n := "a player" if p.max_players <= 1 else "%d-%d players" % [p.min_players, p.max_players]
+			return "Tap %s in the row above (highlighted ones are valid), then confirm." % n
+		Prompt.KIND_CHOOSE_CARDS:
+			if p.data.has("of_player"):
+				return "Cards below belong to %s. Face-down ones are their hand. Tap one, then confirm." % p.data.get("of_player_name", "that player")
+			if p.min_cards == p.max_cards and p.min_cards > 1:
+				return "Tap %d cards, then confirm." % p.min_cards
+			if p.min_cards == 0 and p.can_pass:
+				return "Tap a highlighted card and confirm to use it, or Pass."
+			return "Tap a card, then confirm."
+		Prompt.KIND_CONFIRM, Prompt.KIND_CHOOSE_OPTION:
+			return "Choose one of the options."
+	return ""
 
 
 # --- events / log ------------------------------------------------------------------
@@ -379,6 +443,12 @@ func _card_name(cid: int) -> String:
 func _on_event(ev: Dictionary) -> void:
 	var t: String = ev["type"]
 	match t:
+		"sgs_roles":
+			var parts := []
+			for role in ["king", "loyalist", "rebel", "spy"]:
+				if ev["counts"].has(role):
+					parts.append("%d %s" % [int(ev["counts"][role]), role])
+			_log("[b]Roles in this game:[/b] %s. Only the king is revealed. Rebels win if the king dies; the king's side wins when all rebels and the spy are dead; the spy wins by being the last one standing with the king." % ", ".join(parts))
 		"sgs_turn":
 			_log("[b]— %s's turn —[/b]" % _name(ev["player"]))
 		"sgs_card_used":

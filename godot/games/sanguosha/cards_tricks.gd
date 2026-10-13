@@ -58,7 +58,7 @@ class Dismantle extends Trick:
 		return single_target(e, player, func(eng, _a, b): return rules(eng).has_any_cards(eng, b))
 
 	func effect(e: CardEngine, source: int, target: int, _card: Card) -> void:
-		var cid := await rules(e).choose_card_of(e, source, target, "Dismantle: choose a card to discard")
+		var cid := await rules(e).choose_card_of(e, source, target, "Dismantle: pick one of %s's cards to discard" % e.state.player(target).name)
 		if cid >= 0:
 			await rules(e).discard_cards(e, [cid], source)
 
@@ -71,7 +71,7 @@ class Snatch extends Trick:
 		return single_target(e, player, func(eng, a, b): return rules(eng).has_any_cards(eng, b) and rules(eng).distance(eng, a, b) <= 1)
 
 	func effect(e: CardEngine, source: int, target: int, _card: Card) -> void:
-		var cid := await rules(e).choose_card_of(e, source, target, "Snatch: choose a card to take")
+		var cid := await rules(e).choose_card_of(e, source, target, "Snatch: pick one of %s's cards to take" % e.state.player(target).name)
 		if cid >= 0:
 			await e.move_cards([cid], Sgs.hand(source), {"why": "snatch", "by": source, "from_player": target})
 
@@ -120,7 +120,7 @@ class Barbarians extends AllOthersTrick:
 		super(&"barbarians", "Barbarians", "Every other player must play a Strike or take 1 damage from you.", true)
 
 	func effect(e: CardEngine, source: int, target: int, card: Card) -> void:
-		var played := await rules(e).ask_card_as(e, target, &"strike", "Barbarians: play a Strike or take 1 damage", {"bot": "accept"})
+		var played := await rules(e).ask_card_as(e, target, &"strike", "%s played Barbarians. Play a Strike, or Pass to take 1 damage." % e.state.player(source).name, {"bot": "accept"})
 		if played == null:
 			await rules(e).damage(e, source, target, 1, Sgs.NATURE_NONE, card.id)
 
@@ -130,7 +130,7 @@ class Arrows extends AllOthersTrick:
 		super(&"arrows", "Arrow Barrage", "Every other player must play a Dodge or take 1 damage from you.", true)
 
 	func effect(e: CardEngine, source: int, target: int, card: Card) -> void:
-		var played := await rules(e).ask_card_as(e, target, &"dodge", "Arrow Barrage: play a Dodge or take 1 damage", {"bot": "accept"})
+		var played := await rules(e).ask_card_as(e, target, &"dodge", "%s played Arrow Barrage. Play a Dodge, or Pass to take 1 damage." % e.state.player(source).name, {"bot": "accept"})
 		if played == null:
 			await rules(e).damage(e, source, target, 1, Sgs.NATURE_NONE, card.id)
 
@@ -149,7 +149,7 @@ class Duel extends Trick:
 		while true:
 			if e.is_over:
 				return
-			var played := await r.ask_card_as(e, attacker, &"strike", "Duel: play a Strike", {"bot": "accept"})
+			var played := await r.ask_card_as(e, attacker, &"strike", "Duel with %s: play a Strike, or Pass to take 1 damage." % e.state.player(defender).name, {"bot": "accept"})
 			if played == null:
 				await r.damage(e, defender, attacker, 1, Sgs.NATURE_NONE, card.id)
 				return
@@ -175,7 +175,8 @@ class BorrowedSword extends Trick:
 		var victims := r.players_in_attack_range(e, target)
 		if victims.is_empty():
 			return
-		var vp := Prompt.choose_players(source, "Borrowed Sword: who must be attacked?", victims, 1, 1)
+		var vp := Prompt.choose_players(source, "Borrowed Sword: who must %s attack?" % e.state.player(target).name, victims, 1, 1)
+		vp.data = {"bot": "victim"}
 		var victim: int = (await e.ask(vp)).get("players", [victims[0]])[0]
 		var strike := await r.ask_card_as(e, target, &"strike", "Borrowed Sword: Strike %s or give away your weapon" % e.state.player(victim).name, {"bot": "accept"})
 		if strike != null:

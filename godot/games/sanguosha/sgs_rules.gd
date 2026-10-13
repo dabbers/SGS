@@ -122,6 +122,10 @@ func setup(e: CardEngine, cfg: Dictionary) -> void:
 				_take_from_draw(e, i, StringName(def_id))
 		else:
 			_draw_silent(e, i, 4)
+	var counts := {}
+	for role in Sgs.role_set(names.size()):
+		counts[String(role)] = int(counts.get(String(role), 0)) + 1
+	e.emit_event(&"sgs_roles", {"counts": counts})
 	for i in names.size():
 		e.emit_event(&"sgs_seat", {"player": i, "role": String(st.player(i).role) if st.player(i).role_revealed else "", "hero": String(st.player(i).hero_id), "hp": st.player(i).hp})
 
@@ -236,7 +240,7 @@ func _play_phase(e: CardEngine, pid: int) -> void:
 		var options := []
 		if heroes_by_seat.has(pid):
 			options = heroes_by_seat[pid].active_skills(e, self, pid)
-		var prompt := Prompt.play(pid, "Your play phase", playable, options)
+		var prompt := Prompt.play(pid, "Your turn: play a card or end your turn", playable, options)
 		var resp := await e.ask(prompt)
 		if resp.get("pass", false):
 			return
@@ -258,7 +262,7 @@ func _play_phase(e: CardEngine, pid: int) -> void:
 		var spec := def.target_spec(e, pid, e.card(cid))
 		var targets: Array = []
 		if int(spec["max"]) > 0:
-			var tp := Prompt.choose_players(pid, "%s: choose target(s)" % def.name, spec["candidates"], int(spec["min"]), int(spec["max"]), true)
+			var tp := Prompt.choose_players(pid, "%s: choose %s, or Pass to cancel" % [def.name, "a target" if int(spec["max"]) == 1 else "up to %d targets" % int(spec["max"])], spec["candidates"], int(spec["min"]), int(spec["max"]), true)
 			tp.data = {"card": cid, "harmful": def.harmful, "bot": "target"}
 			var tr := await e.ask(tp)
 			if tr.get("pass", false):
@@ -272,7 +276,9 @@ func _discard_phase(e: CardEngine, pid: int) -> void:
 	var excess := hand.size() - max_hand(e, pid)
 	if excess <= 0:
 		return
-	var resp := await e.ask(Prompt.choose_cards(pid, "Discard down to %d cards" % max_hand(e, pid), hand, excess, excess))
+	var dp := Prompt.choose_cards(pid, "Discard %d card%s (hand limit is %d)" % [excess, "" if excess == 1 else "s", max_hand(e, pid)], hand, excess, excess)
+	dp.data = {"discard": true}
+	var resp := await e.ask(dp)
 	await discard_cards(e, resp.get("cards", hand.slice(0, excess)), pid)
 
 
@@ -417,8 +423,10 @@ func use_card(e: CardEngine, pid: int, cid: int, targets: Array, as_def: StringN
 
 
 ## A card played in response (Dodge, Strike for Duel, Negate, Peach to save...).
-func play_reactive(e: CardEngine, pid: int, cid: int, as_def: StringName) -> void:
-	e.emit_event(&"sgs_card_used", {"player": pid, "card": cid, "card_ids": [cid], "as": String(as_def), "targets": [], "reactive": true})
+func play_reactive(e: CardEngine, pid: int, cid: int, as_def: StringName, extra: Dictionary = {}) -> void:
+	var ev := {"player": pid, "card": cid, "card_ids": [cid], "as": String(as_def), "targets": [], "reactive": true}
+	ev.merge(extra)
+	e.emit_event(&"sgs_card_used", ev)
 	await e.move_cards([cid], Sgs.ZONE_DISCARD, {"why": "use", "by": pid}, true)
 
 
@@ -507,7 +515,7 @@ func choose_card_of(e: CardEngine, chooser: int, target: int, title: String, inc
 	if pool.is_empty():
 		return -1
 	var p := Prompt.choose_cards(chooser, title, pool, 1, 1)
-	p.data = {"of_player": target, "blind_zone": String(Sgs.hand(target))}
+	p.data = {"of_player": target, "blind_zone": String(Sgs.hand(target)), "of_player_name": e.state.player(target).name}
 	var resp := await e.ask(p)
 	return int(resp.get("cards", [pool[0]])[0])
 
@@ -553,7 +561,7 @@ func _ask_negate(e: CardEngine, trick: Card, target: int, negated: bool) -> int:
 		var usable := cards_usable_as(e, pid, &"negate")
 		if usable.is_empty():
 			continue
-		var title := "Negate the Negate on %s (%s)?" % [def.name, e.state.player(target).name] if negated else "Negate %s targeting %s?" % [def.name, e.state.player(target).name]
+		var title := "%s is being negated. Play a Negate to cancel that Negate?" % def.name if negated else "%s is about to hit %s. Play a Negate to cancel it, or Pass." % [def.name, e.state.player(target).name]
 		var p := Prompt.choose_cards(pid, title, usable, 0, 1, true)
 		p.data = {"bot": "negate", "target": target, "harmful": def.harmful, "negated": negated, "trick": trick.id}
 		var resp := await e.ask(p)
@@ -577,7 +585,7 @@ func resolve_strike(e: CardEngine, source: int, target: int, card: Card, nature:
 		return
 	var dodged := true
 	for i in int(ctx["dodges_needed"]):
-		var d := await ask_card_as(e, target, &"dodge", "Dodge %s's Strike?" % e.state.player(source).name, {"bot": "accept"}, {"ignore_armor": ctx["ignore_armor"]})
+		var d := await ask_card_as(e, target, &"dodge", "%s played a Strike at you. Play a Dodge, or Pass to take %d damage." % [e.state.player(source).name, amount], {"bot": "accept"}, {"ignore_armor": ctx["ignore_armor"]})
 		if d == null:
 			dodged = false
 			break
@@ -643,7 +651,7 @@ func dying(e: CardEngine, pid: int, source: int) -> void:
 				usable += cards_usable_as(e, q, &"wine")
 			if usable.is_empty():
 				break
-			var title := "You are dying! Use a Peach or Wine?" if q == pid else "%s is dying. Give a Peach?" % p.name
+			var title := "You are dying (%d HP). Play a Peach or Wine to recover 1 HP, or Pass to die." % p.hp if q == pid else "%s is dying. Give them a Peach to save them, or Pass." % p.name
 			var pr := Prompt.choose_cards(q, title, usable, 0, 1, true)
 			pr.data = {"bot": "rescue", "target": pid}
 			var resp := await e.ask(pr)
@@ -651,7 +659,7 @@ func dying(e: CardEngine, pid: int, source: int) -> void:
 				break
 			var cid: int = int(resp["cards"][0])
 			var as_def := &"wine" if e.def_of(cid).has_tag(&"wine") else &"peach"
-			await play_reactive(e, q, cid, as_def)
+			await play_reactive(e, q, cid, as_def, {"rescue": true, "target": pid})
 			await heal(e, pid, 1)
 		if p.hp > 0:
 			return
@@ -728,80 +736,5 @@ func equip(e: CardEngine, pid: int, card: Card) -> void:
 
 # --- bot policy ------------------------------------------------------------
 
-func _is_ally(e: CardEngine, me: int, other: int) -> bool:
-	if me == other:
-		return true
-	return Sgs.same_side(e.state.player(me).role, e.state.player(other).role)
-
-
 func bot_answer(e: CardEngine, prompt: Prompt, brng: CardRng) -> Dictionary:
-	var me := prompt.player
-	var hint: String = prompt.data.get("bot", "")
-	match prompt.kind:
-		Prompt.KIND_PLAY:
-			var p := e.state.player(me)
-			if not prompt.options.is_empty() and brng.randi_range(0, 2) == 0:
-				return {"option": brng.pick(prompt.option_ids())}
-			if prompt.cards.is_empty():
-				return {"pass": true}
-			var best: int = -1
-			var best_rank := 99
-			for cid in prompt.cards:
-				var d := e.def_of(cid) as SgsCardDef
-				var rank := 50
-				if d.has_tag(&"peach") and p.hp < p.max_hp:
-					rank = 0
-				elif d.type == SgsCardDef.TYPE_EQUIPMENT:
-					rank = 1
-				elif d.has_tag(&"strike") or d.id == &"duel":
-					rank = 2
-				elif d.has_tag(&"wine"):
-					rank = 40
-				elif d.type == SgsCardDef.TYPE_TRICK:
-					rank = 3
-				else:
-					var ways := playable_as(e, me, cid)
-					if ways.has(&"strike"):
-						rank = 2
-				rank += brng.randi_range(0, 1)
-				if rank < best_rank:
-					best_rank = rank
-					best = cid
-			return {"cards": [best]}
-		Prompt.KIND_CHOOSE_PLAYERS:
-			var pool := prompt.players.duplicate()
-			if hint == "target":
-				var harmful: bool = prompt.data.get("harmful", true)
-				var preferred := pool.filter(func(q): return _is_ally(e, me, q) != harmful)
-				if not preferred.is_empty():
-					pool = preferred
-			brng.shuffle(pool)
-			var n: int = maxi(prompt.min_players, 1)
-			return {"players": pool.slice(0, mini(n, pool.size()))}
-		Prompt.KIND_CHOOSE_CARDS:
-			match hint:
-				"accept":
-					return {"cards": [prompt.cards[0]]}
-				"decline":
-					return {"pass": true}
-				"rescue":
-					return {"cards": [prompt.cards[0]]} if _is_ally(e, me, int(prompt.data["target"])) else {"pass": true}
-				"negate":
-					var target := int(prompt.data["target"])
-					var harmful: bool = prompt.data["harmful"]
-					var negated: bool = prompt.data["negated"]
-					var want := (harmful and _is_ally(e, me, target)) or (not harmful and not _is_ally(e, me, target))
-					if negated:
-						want = not want
-					return {"cards": [prompt.cards[0]]} if want else {"pass": true}
-			if prompt.min_cards == 0 and prompt.can_pass:
-				return {"pass": true}
-			var pool := prompt.cards.duplicate()
-			# Keep Peaches when discarding if we can.
-			pool.sort_custom(func(a, b): return int(e.def_of(a).has_tag(&"peach")) < int(e.def_of(b).has_tag(&"peach")))
-			return {"cards": pool.slice(0, maxi(prompt.min_cards, 1))}
-		Prompt.KIND_CONFIRM:
-			if hint == "decline":
-				return {"option": "no"}
-			return {"option": "yes"}
-	return {}
+	return SgsBot.answer(e, prompt, brng)
