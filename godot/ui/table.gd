@@ -191,7 +191,7 @@ func _render_seats(snap: Dictionary) -> void:
 
 
 func _seat_text(snap: Dictionary, p: Dictionary) -> String:
-	var hero: Dictionary = snap.get("vars", {}).get("heroes", {}).get(str(p["id"]), snap.get("vars", {}).get("heroes", {}).get(int(p["id"]), {}))
+	var hero: Dictionary = _hero_of(snap, int(p["id"]))
 	var lines := ["%s%s" % [p["name"], "  [%s]" % p["role"] if p["role"] != "" else ""]]
 	lines.append("%s  ♥ %d/%d" % [hero.get("name", ""), int(p["hp"]), int(p["max_hp"])])
 	var hand_n: int = snap["zones"].get("hand:%d" % int(p["id"]), {}).get("cards", []).size()
@@ -203,6 +203,12 @@ func _seat_text(snap: Dictionary, p: Dictionary) -> String:
 	if not p["alive"]:
 		lines.append("(dead)")
 	return "\n".join(lines)
+
+
+## Hero data keyed by seat; keys are ints in-process and strings after JSON transport.
+func _hero_of(snap: Dictionary, seat: int) -> Dictionary:
+	var heroes: Dictionary = snap.get("vars", {}).get("heroes", {})
+	return heroes.get(seat, heroes.get(str(seat), {}))
 
 
 func _zone_names(snap: Dictionary, zid: String) -> String:
@@ -217,7 +223,7 @@ func _render_me(snap: Dictionary) -> void:
 	var p := session.player_info(session.my_seat)
 	if p.is_empty():
 		return
-	var hero: Dictionary = snap.get("vars", {}).get("heroes", {}).get(str(session.my_seat), {})
+	var hero: Dictionary = _hero_of(snap, session.my_seat)
 	my_info.text = "You: %s  [%s]  %s  ♥ %d/%d   %s" % [p["name"], p["role"], hero.get("name", ""), int(p["hp"]), int(p["max_hp"]),
 		"  |  ".join(hero.get("skills", []).map(func(s): return s["label"]))]
 	my_equip.text = "Equipment: " + _zone_names(snap, "equip:%d" % session.my_seat) + "    Judgement: " + _zone_names(snap, "judge:%d" % session.my_seat)
