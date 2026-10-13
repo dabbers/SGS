@@ -62,7 +62,7 @@ func _build() -> void:
 	add_child(root)
 
 	var top_scroll := ScrollContainer.new()
-	top_scroll.custom_minimum_size.y = 190
+	top_scroll.custom_minimum_size.y = 165
 	top_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
 	top_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	root.add_child(top_scroll)
@@ -126,11 +126,12 @@ func _build() -> void:
 	var bottom := VBoxContainer.new()
 	root.add_child(bottom)
 	my_info = Label.new()
+	my_info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	bottom.add_child(my_info)
 	my_equip = Label.new()
 	bottom.add_child(my_equip)
 	var hand_scroll := ScrollContainer.new()
-	hand_scroll.custom_minimum_size.y = 196
+	hand_scroll.custom_minimum_size.y = 176
 	hand_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	bottom.add_child(hand_scroll)
 	hand_row = HBoxContainer.new()
@@ -190,7 +191,7 @@ func _render_seats(snap: Dictionary) -> void:
 		var p: Dictionary = players[(me + i) % n]
 		var seat := int(p["id"])
 		var b := Button.new()
-		b.custom_minimum_size = Vector2(250, 180)
+		b.custom_minimum_size = Vector2(250, 155)
 		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		b.text = _seat_text(snap, p)
 		b.disabled = not p["alive"]
@@ -237,7 +238,8 @@ func _render_me(snap: Dictionary) -> void:
 		return
 	var hero: Dictionary = _hero_of(snap, session.my_seat)
 	my_info.text = "You: %s  [%s]  %s  ♥ %d/%d   %s" % [p["name"], p["role"], hero.get("name", ""), int(p["hp"]), int(p["max_hp"]),
-		"  |  ".join(hero.get("skills", []).map(func(s): return s["label"]))]
+		"  |  ".join(hero.get("skills", []).map(func(s): return s["label"].split(":")[0]))]
+	my_info.tooltip_text = "\n".join(hero.get("skills", []).map(func(s): return s["label"]))
 	my_equip.text = "Equipment: " + _zone_names(snap, "equip:%d" % session.my_seat) + "    Judgement: " + _zone_names(snap, "judge:%d" % session.my_seat)
 	for c in hand_row.get_children():
 		c.queue_free()

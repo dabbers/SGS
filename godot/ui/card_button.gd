@@ -19,7 +19,7 @@ var playable: bool = true:
 func setup(cid: int, info: Dictionary, defs: Dictionary) -> void:
 	card_id = cid
 	toggle_mode = false
-	custom_minimum_size = Vector2(132, 184)
+	custom_minimum_size = Vector2(132, 166)
 	add_theme_font_size_override("font_size", 21)
 	size_flags_vertical = Control.SIZE_SHRINK_END
 	if info.has("def"):
