@@ -23,6 +23,10 @@ window/handheld/orientation=4
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 
+[gui]
+
+theme/custom_font="res://ui/fonts/DejaVuSans.ttf"
+
 [input_devices]
 
 pointing/emulate_touch_from_mouse=true
