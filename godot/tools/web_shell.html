@@ -104,20 +104,20 @@ body {
 		</noscript>
 
 		<div id="status">
-			<img id="status-splash" class="show-image--true fullsize--true use-filter--true" src="https://cdn.jsdelivr.net/gh/dabbers/SGS@1e5d1727ee545de28a72fb935f7e713110a56f0d/index.png" alt="">
+			<img id="status-splash" class="show-image--true fullsize--true use-filter--true" src="https://cdn.jsdelivr.net/gh/dabbers/SGS@0f1bd5a5a1413c918de0817648eac9619371c7fd/index.png" alt="">
 			<progress id="status-progress"></progress>
 			<div id="status-notice"></div>
 		</div>
 
-		<script src="https://cdn.jsdelivr.net/gh/dabbers/SGS@1e5d1727ee545de28a72fb935f7e713110a56f0d/index.js"></script>
+		<script src="https://cdn.jsdelivr.net/gh/dabbers/SGS@0f1bd5a5a1413c918de0817648eac9619371c7fd/index.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"https://cdn.jsdelivr.net/gh/dabbers/SGS@1e5d1727ee545de28a72fb935f7e713110a56f0d/index","mainPack":"https://cdn.jsdelivr.net/gh/dabbers/SGS@1e5d1727ee545de28a72fb935f7e713110a56f0d/index.pck","experimentalVK":false,"fileSizes":{"index.pck":591380,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"https://cdn.jsdelivr.net/gh/dabbers/SGS@0f1bd5a5a1413c918de0817648eac9619371c7fd/index","mainPack":"https://cdn.jsdelivr.net/gh/dabbers/SGS@0f1bd5a5a1413c918de0817648eac9619371c7fd/index.pck","experimentalVK":false,"fileSizes":{"index.pck":603728,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 const GODOT_THREADS_ENABLED = false;
 
 // --- wasm delivery shim ----------------------------------------------------
 // The 39 MB index.wasm is served gzipped (index.wasm.gz, ~10 MB). We download
 // it, inflate it in the browser and hand Godot's loader a blob: URL instead.
-const WASM_GZ_URLS = ['https://cdn.jsdelivr.net/gh/dabbers/SGS@1e5d1727ee545de28a72fb935f7e713110a56f0d/index.wasm.gz', 'https://raw.githubusercontent.com/dabbers/SGS/web-build/index.wasm.gz'];
+const WASM_GZ_URLS = ['https://cdn.jsdelivr.net/gh/dabbers/SGS@0f1bd5a5a1413c918de0817648eac9619371c7fd/index.wasm.gz', 'https://raw.githubusercontent.com/dabbers/SGS/web-build/index.wasm.gz'];
 let wasmBlobUrl = null;
 async function fetchWasmBlob(onProgress) {
 	let lastErr = null;
