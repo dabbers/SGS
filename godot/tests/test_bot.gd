@@ -69,7 +69,7 @@ func test_public_evidence_changes_stance() -> void:
 	e.emit_event(&"sgs_damage", {"source": 2, "target": 0, "amount": 1, "nature": "none", "card": -1, "hp": 3})
 	assert_eq(SgsBot.stance(e, 1, 2), SgsBot.ENEMY, "loyalist now treats the attacker as an enemy")
 	assert_eq(SgsBot.stance(e, 0, 2), SgsBot.ENEMY, "so does the king")
-	assert_eq(SgsBot.stance(e, 3, 2), SgsBot.ENEMY, "the spy hunts rebels while the king lives")
+	assert_eq(SgsBot.stance(e, 3, 2), SgsBot.ALLY, "the spy props up the rebel while the king's side is ahead")
 	# Seat 1 rescues the king with a Peach in public.
 	e.emit_event(&"sgs_card_used", {"player": 1, "card": -1, "card_ids": [], "as": "peach", "targets": [], "reactive": true, "rescue": true, "target": 0})
 	assert_eq(SgsBot.stance(e, 0, 1), SgsBot.ALLY, "king trusts the rescuer")
@@ -84,6 +84,85 @@ func test_rescue_only_allies() -> void:
 	assert_true(SgsBot.answer(e, pr, CardRng.new(1)).has("cards"), "loyalist saves the king")
 	pr.data = {"bot": "rescue", "target": 2}
 	assert_true(SgsBot.answer(e, pr, CardRng.new(1)).get("pass", false), "but not an unknown")
+
+
+func test_spy_balances_the_sides() -> void:
+	var e := _game(7, ["king", "loyalist", "rebel", "spy"], {})
+	assert_eq(SgsBot.stance(e, 3, 1), SgsBot.UNKNOWN, "nothing known yet")
+	assert_eq(SgsBot.stance(e, 3, 0), SgsBot.ALLY, "the king is left alone until the others are placed")
+	# Seat 2 strikes the king: the spy now knows the rebel, and by elimination the loyalist.
+	e.emit_event(&"sgs_damage", {"source": 2, "target": 0, "amount": 1, "nature": "none", "card": -1, "hp": 4})
+	assert_eq(SgsBot.side_guess(e, 3, 2), Sgs.ROLE_REBEL)
+	assert_eq(SgsBot.side_guess(e, 3, 1), Sgs.ROLE_KING, "the other hidden player must be the loyalist")
+	assert_eq(SgsBot.stronger_side(e, 3), Sgs.ROLE_KING, "two players against one")
+	assert_eq(SgsBot.stance(e, 3, 1), SgsBot.ENEMY, "so the spy attacks the loyalist")
+	assert_eq(SgsBot.stance(e, 3, 2), SgsBot.ALLY, "and helps the rebel")
+	assert_eq(SgsBot.stance(e, 3, 0), SgsBot.ENEMY, "a healthy king on the stronger side is chipped at")
+	assert_eq(SgsBot.attack_targets(e, 3, [0, 1, 2]), [1], "but the loyalist is hit first")
+	e.state.player(0).hp = 2
+	assert_eq(SgsBot.stance(e, 3, 0), SgsBot.ALLY, "a weakened king is protected")
+	# The loyalist dies and the king is low: the rebel's side is ahead now.
+	e.state.player(1).alive = false
+	e.state.player(1).role_revealed = true
+	assert_eq(SgsBot.stronger_side(e, 3), Sgs.ROLE_REBEL)
+	assert_eq(SgsBot.stance(e, 3, 2), SgsBot.ENEMY, "the spy turns on the rebel")
+	assert_eq(SgsBot.stance(e, 3, 0), SgsBot.ALLY, "and keeps the king alive")
+
+
+func test_spy_rescues_the_weaker_side() -> void:
+	var e := _game(8, ["king", "loyalist", "rebel", "spy"], {3: ["peach"]})
+	e.emit_event(&"sgs_damage", {"source": 2, "target": 0, "amount": 1, "nature": "none", "card": -1, "hp": 4})
+	var peach: int = e.state.zone(Sgs.hand(3)).cards[0]
+	var pr := Prompt.choose_cards(3, "x is dying", [peach], 0, 1, true)
+	pr.data = {"bot": "rescue", "target": 2}
+	assert_true(SgsBot.answer(e, pr, CardRng.new(1)).has("cards"), "the rebel is behind: saved")
+	pr.data = {"bot": "rescue", "target": 1}
+	assert_true(SgsBot.answer(e, pr, CardRng.new(1)).get("pass", false), "the loyalist is ahead: left to die")
+	pr.data = {"bot": "rescue", "target": 0}
+	assert_true(SgsBot.answer(e, pr, CardRng.new(1)).has("cards"), "the king is always saved while rebels remain")
+
+
+func test_spy_turns_on_the_king_last() -> void:
+	var e := _game(9, ["king", "loyalist", "rebel", "spy"], {})
+	e.state.player(2).alive = false
+	e.state.player(2).role_revealed = true
+	assert_false(SgsBot.rebels_remain(e, 3))
+	assert_eq(SgsBot.stance(e, 3, 1), SgsBot.ENEMY, "the loyalist must go")
+	assert_eq(SgsBot.stance(e, 3, 0), SgsBot.ENEMY, "a healthy king can be worn down meanwhile")
+	assert_eq(SgsBot.attack_targets(e, 3, [0, 1]), [1], "but the loyalist comes first")
+	e.state.player(0).hp = 2
+	assert_eq(SgsBot.stance(e, 3, 0), SgsBot.ALLY, "a weak king is not finished while a loyalist lives")
+	e.state.player(1).alive = false
+	e.state.player(1).role_revealed = true
+	assert_eq(SgsBot.stance(e, 3, 0), SgsBot.ENEMY, "one on one, the king is the last target")
+	assert_eq(SgsBot.stance(e, 1, 3), SgsBot.ENEMY, "the loyalist knows the last hidden player is the spy")
+
+
+func test_rebel_duels_the_king_out_of_strike_range() -> void:
+	# Seat 2 is two seats from the king: a Strike cannot reach, a Duel can.
+	var e := _game(10, ["king", "loyalist", "rebel", "spy"], {2: ["strike", "duel"]})
+	var hand := e.state.zone(Sgs.hand(2)).cards
+	assert_false((e.rules as SgsRules).in_attack_range(e, 2, 0))
+	for i in 5:
+		var resp := SgsBot.answer(e, Prompt.play(2, "Your turn", hand), CardRng.new(i))
+		assert_eq(e.card(int(resp.get("cards", [-1])[0])).def_id, &"duel", "duel beats a strike at someone else")
+	var tp := Prompt.choose_players(2, "Duel: choose a target", [0, 1, 3], 1, 1, true)
+	tp.data = {"harmful": true, "bot": "target"}
+	assert_eq(SgsBot.answer(e, tp, CardRng.new(1)).get("players", [-1])[0], 0, "and it is aimed at the king")
+
+
+func test_rebel_keeps_one_dodge_when_discarding() -> void:
+	var e := _game(11, ["king", "loyalist", "rebel", "spy"], {2: ["dodge", "peach", "strike"], 1: ["dodge", "peach", "strike"]})
+	for seat in [2, 1]:
+		var hand := e.state.zone(Sgs.hand(seat)).cards
+		var dp := Prompt.choose_cards(seat, "Discard 2 cards", hand, 2, 2)
+		dp.data = {"discard": true}
+		var kept := hand.duplicate()
+		for c in SgsBot.answer(e, dp, CardRng.new(1))["cards"]:
+			kept.erase(int(c))
+		assert_eq(kept.size(), 1)
+		var expect := &"dodge" if seat == 2 else &"peach"
+		assert_eq(e.card(kept[0]).def_id, expect, "seat %d keeps the %s" % [seat, expect])
 
 
 func test_four_player_loyalist_deduces_enemies() -> void:

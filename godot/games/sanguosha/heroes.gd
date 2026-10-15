@@ -128,7 +128,9 @@ class SgsHero extends RefCounted:
 					await r.heal(e, pid, 1)
 			"skill:zhiheng":
 				var pool := e.state.zone(Sgs.hand(pid)).cards + e.state.zone(Sgs.equip(pid)).cards
-				var resp := await e.ask(Prompt.choose_cards(pid, "Balance of Power: discard any number of cards", pool, 1, 99, true))
+				var zp := Prompt.choose_cards(pid, "Balance of Power: discard any number of cards", pool, 1, 99, true)
+				zp.data = {"discard": true}
+				var resp := await e.ask(zp)
 				if resp.get("pass", false):
 					return
 				p.flags["skill_uses"]["zhiheng"] = 1
@@ -136,10 +138,14 @@ class SgsHero extends RefCounted:
 				await r.discard_cards(e, resp["cards"], pid)
 				await r.draw_cards(e, pid, resp["cards"].size())
 			"skill:qingnang":
-				var resp := await e.ask(Prompt.choose_cards(pid, "Green Satchel: discard a hand card", e.state.zone(Sgs.hand(pid)).cards, 1, 1, true))
+				var qp := Prompt.choose_cards(pid, "Green Satchel: discard a hand card", e.state.zone(Sgs.hand(pid)).cards, 1, 1, true)
+				qp.data = {"discard": true}
+				var resp := await e.ask(qp)
 				if resp.get("pass", false):
 					return
-				var who := await e.ask(Prompt.choose_players(pid, "Green Satchel: heal whom?", _wounded(e), 1, 1, true))
+				var wp := Prompt.choose_players(pid, "Green Satchel: heal whom?", _wounded(e), 1, 1, true)
+				wp.data = {"bot": "help"}
+				var who := await e.ask(wp)
 				if who.get("pass", false):
 					return
 				p.flags["skill_uses"]["qingnang"] = 1
