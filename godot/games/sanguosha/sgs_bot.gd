@@ -9,6 +9,9 @@ const ENEMY := &"enemy"
 const ALLY := &"ally"
 const UNKNOWN := &"unknown"
 
+# The spy only attacks a king with at least this much HP while rebels remain.
+const SPY_SAFE_KING_HP := 3
+
 # Card value when deciding what to keep / give away (higher = keep).
 const KEEP_VALUE := {
 	"peach": 6, "dodge": 5, "negate": 4, "strike": 3, "strike_fire": 3, "strike_thunder": 3, "wine": 2,
@@ -102,6 +105,117 @@ static func hidden_pool(e: CardEngine, me: int) -> Dictionary:
 	return pool
 
 
+## Could a rebel still be alive, as far as `me` can tell from public information?
+static func rebels_remain(e: CardEngine, me: int) -> bool:
+	if hidden_pool(e, me).has(Sgs.ROLE_REBEL):
+		return true
+	for q in e.state.alive_players():
+		if public_role(e, q) == Sgs.ROLE_REBEL:
+			return true
+	return false
+
+
+## Which side `other` is probably on, from public information: Sgs.ROLE_KING
+## (the king's side), Sgs.ROLE_REBEL, or &"" when there is no evidence yet.
+## Besides revealed roles and behaviour it uses elimination: once every hidden
+## rebel has been spotted, the remaining unknowns must be loyal, and vice versa.
+static func side_guess(e: CardEngine, me: int, other: int) -> StringName:
+	return _side_guesses(e, me).get(other, &"")
+
+
+static func _side_guesses(e: CardEngine, me: int) -> Dictionary:
+	var king := king_seat(e)
+	var pool := hidden_pool(e, me)
+	var out := {}
+	var unknown: Array[int] = []
+	var hidden_rebels := 0
+	var hidden_loyalists := 0
+	for q in e.state.alive_players():
+		if q == me:
+			continue
+		var known := public_role(e, q)
+		if q == king or known == Sgs.ROLE_LOYALIST:
+			out[q] = Sgs.ROLE_KING
+		elif known == Sgs.ROLE_REBEL:
+			out[q] = Sgs.ROLE_REBEL
+		elif known == Sgs.ROLE_SPY:
+			continue
+		else:
+			var s := suspicion(e, q)
+			if s >= 1.0:
+				out[q] = Sgs.ROLE_REBEL
+				hidden_rebels += 1
+			elif s <= -1.0:
+				out[q] = Sgs.ROLE_KING
+				hidden_loyalists += 1
+			else:
+				unknown.append(q)
+	var rebels_left := int(pool.get(Sgs.ROLE_REBEL, 0)) - hidden_rebels
+	var loyal_left := int(pool.get(Sgs.ROLE_LOYALIST, 0)) - hidden_loyalists
+	var spies_left := int(pool.get(Sgs.ROLE_SPY, 0))
+	if not unknown.is_empty():
+		if rebels_left <= 0 and spies_left <= 0:
+			for q in unknown:
+				out[q] = Sgs.ROLE_KING
+		elif loyal_left <= 0 and spies_left <= 0:
+			for q in unknown:
+				out[q] = Sgs.ROLE_REBEL
+	return out
+
+
+## Rough fighting strength of a side as `me` sees it: every alive member counts
+## for being there, for their HP and for the cards they hold. Players whose side
+## is still unknown count half for each side.
+static func side_strength(e: CardEngine, me: int, side: StringName) -> float:
+	var guesses := _side_guesses(e, me)
+	var total := 0.0
+	for q in e.state.alive_players():
+		if q == me:
+			continue
+		var g: StringName = guesses.get(q, &"")
+		var weight := 1.0 if g == side else (0.5 if g == &"" else 0.0)
+		if weight == 0.0:
+			continue
+		var p := e.state.player(q)
+		total += weight * (2.0 + maxi(p.hp, 0) + 0.5 * e.state.zone(Sgs.hand(q)).size() + 0.5 * e.state.zone(Sgs.equip(q)).size())
+	return total
+
+
+## Chip at a king whose side is ahead, but only once everyone else has been
+## placed (the loyalist is the better early target) and only while the king is
+## healthy: the king must outlive the rebels for the spy to win at all, so a
+## weakened king is protected instead.
+static func _spy_can_chip_king(e: CardEngine, me: int) -> bool:
+	if e.state.player(king_seat(e)).hp < SPY_SAFE_KING_HP:
+		return false
+	var guesses := _side_guesses(e, me)
+	for q in e.state.alive_players():
+		if q != me and q != king_seat(e) and guesses.get(q, &"") == &"":
+			return false
+	return true
+
+
+## The king's side is ahead only on paper: everyone is placed, the king is its
+## last member and too weak to be chipped at. Then the spy finishes the rebels
+## instead and takes that king on alone, rather than idling.
+static func _spy_faces_lone_weak_king(e: CardEngine, me: int) -> bool:
+	if e.state.player(king_seat(e)).hp >= SPY_SAFE_KING_HP:
+		return false
+	var guesses := _side_guesses(e, me)
+	for q in e.state.alive_players():
+		if q != me and q != king_seat(e) and guesses.get(q, &"") != Sgs.ROLE_REBEL:
+			return false
+	return true
+
+
+## The side that is currently ahead (ties go to the king's side: it starts
+## ahead and is the spy's final opponent anyway).
+static func stronger_side(e: CardEngine, me: int) -> StringName:
+	if side_strength(e, me, Sgs.ROLE_KING) >= side_strength(e, me, Sgs.ROLE_REBEL):
+		return Sgs.ROLE_KING
+	return Sgs.ROLE_REBEL
+
+
 static func _bump(scores: Dictionary, seat: int, delta: float) -> void:
 	scores[seat] = float(scores.get(seat, 0.0)) + delta
 
@@ -120,13 +234,13 @@ static func stance(e: CardEngine, me: int, other: int) -> StringName:
 				return ALLY
 			if known == Sgs.ROLE_REBEL or known == Sgs.ROLE_SPY:
 				return ENEMY
+			if not pool.has(Sgs.ROLE_LOYALIST):
+				return ENEMY   # every hidden player left is a rebel or the spy, whatever they did for us
 			var s := suspicion(e, other)
 			if s >= 1.0:
 				return ENEMY
 			if s <= -1.0:
 				return ALLY
-			if not pool.has(Sgs.ROLE_LOYALIST):
-				return ENEMY   # every hidden player left is a rebel or the spy
 			if damaged_me(e, me, other):
 				return ENEMY
 			return UNKNOWN
@@ -148,20 +262,30 @@ static func stance(e: CardEngine, me: int, other: int) -> StringName:
 				return ENEMY
 			return UNKNOWN
 		Sgs.ROLE_SPY:
-			# Keep the king alive while rebels could remain; then turn on everyone.
-			var rebels_left := pool.has(Sgs.ROLE_REBEL)
-			for q in e.state.alive_players():
-				if public_role(e, q) == Sgs.ROLE_REBEL:
-					rebels_left = true
+			# The spy wins only as the last one standing, so it plays the balancer:
+			# keep the king alive while rebels could remain, wear down whichever
+			# side is ahead (the loyalist rather than the king early on), and prop
+			# up the side that is behind. Once the rebels are gone, everyone is prey.
+			if not rebels_remain(e, me):
+				# Loyalists first. The king is fair game once it is just the two of us,
+				# and may be worn down while healthy before that, but never finished
+				# while a loyalist lives: that would still hand the rebels the win.
+				if other != king:
+					return ENEMY
+				if e.state.alive_players().size() == 2 or e.state.player(king).hp >= SPY_SAFE_KING_HP:
+					return ENEMY
+				return ALLY
+			var strong := stronger_side(e, me)
 			if other == king:
-				return ALLY if rebels_left else ENEMY
-			if known == Sgs.ROLE_REBEL or suspicion(e, other) >= 1.0:
+				return ENEMY if strong == Sgs.ROLE_KING and _spy_can_chip_king(e, me) else ALLY
+			var guess := side_guess(e, me, other)
+			if guess == &"":
+				return UNKNOWN
+			if guess == strong:
 				return ENEMY
-			if not rebels_left:
-				return ENEMY   # only loyalists remain; the spy must be last standing
-			if damaged_me(e, me, other):
+			if strong == Sgs.ROLE_KING and _spy_faces_lone_weak_king(e, me):
 				return ENEMY
-			return UNKNOWN
+			return ALLY
 	return UNKNOWN
 
 
@@ -173,10 +297,26 @@ static func filter_stance(e: CardEngine, me: int, seats: Array, want: StringName
 static func attack_targets(e: CardEngine, me: int, candidates: Array) -> Array:
 	var enemies := filter_stance(e, me, candidates, ENEMY)
 	if not enemies.is_empty():
+		if e.state.player(me).role == Sgs.ROLE_SPY and enemies.size() > 1:
+			enemies.erase(king_seat(e))   # the balancer wears down loyalists before the king
 		return enemies
 	if e.state.player(me).role == Sgs.ROLE_REBEL:
 		return filter_stance(e, me, candidates, UNKNOWN)
 	return []
+
+
+## Who `me` would spend a beneficial effect on: allies, failing that players not
+## known to be enemies. The spy is stricter: protecting a player (stance ALLY)
+## is not the same as building them up, so it only helps itself and the side
+## that is behind; a king it merely keeps alive gets nothing extra.
+static func help_targets(e: CardEngine, me: int, candidates: Array) -> Array:
+	if e.state.player(me).role == Sgs.ROLE_SPY and rebels_remain(e, me):
+		var weaker := Sgs.ROLE_REBEL if stronger_side(e, me) == Sgs.ROLE_KING else Sgs.ROLE_KING
+		return candidates.filter(func(q): return int(q) == me or side_guess(e, me, int(q)) == weaker)
+	var allies := filter_stance(e, me, candidates, ALLY)
+	if not allies.is_empty():
+		return allies
+	return filter_stance(e, me, candidates, UNKNOWN)
 
 
 static func pick_weakest(e: CardEngine, seats: Array, brng: CardRng) -> int:
@@ -244,6 +384,12 @@ static func play_score(e: CardEngine, me: int, cid: int, as_def: StringName) -> 
 		if d.has_tag(&"strike"):
 			return 55.0
 		if as_def == &"duel":
+			var king := king_seat(e)
+			if p.role == Sgs.ROLE_REBEL and targets.has(king) and not r.in_attack_range(e, me, king):
+				return 58.0   # a Strike cannot reach the king, but a Duel can
+			for t in targets:
+				if r.equip_of(e, int(t), &"armor") != null:
+					return 57.0   # armour stops Strikes, not Duels
 			return 50.0
 		if as_def == &"dismantle" or as_def == &"snatch":
 			for t in targets:
@@ -267,7 +413,7 @@ static func answer(e: CardEngine, prompt: Prompt, brng: CardRng) -> Dictionary:
 					var harmful: bool = prompt.data.get("harmful", true)
 					if pool == [me]:
 						return {"players": [me]}   # self-targeting card (Lightning)
-					var preferred := attack_targets(e, me, pool) if harmful else filter_stance(e, me, pool, ALLY)
+					var preferred := attack_targets(e, me, pool) if harmful else help_targets(e, me, pool)
 					if preferred.is_empty():
 						if prompt.can_pass:
 							return {"pass": true}
@@ -283,9 +429,12 @@ static func answer(e: CardEngine, prompt: Prompt, brng: CardRng) -> Dictionary:
 					if not enemies.is_empty():
 						pool = enemies
 				_:
-					var allies := filter_stance(e, me, pool, ALLY)
-					if not allies.is_empty():
-						pool = allies
+					# Something good for the chosen player.
+					var worthy := help_targets(e, me, pool)
+					if not worthy.is_empty():
+						pool = worthy
+					elif prompt.can_pass and prompt.min_players == 0:
+						return {"pass": true}
 			brng.shuffle(pool)
 			return {"players": pool.slice(0, maxi(prompt.min_players, 1))}
 		Prompt.KIND_CHOOSE_CARDS:
@@ -304,13 +453,15 @@ static func _answer_play(e: CardEngine, me: int, prompt: Prompt, brng: CardRng) 
 	for o in prompt.options:
 		match o["id"]:
 			"skill:qingnang":
-				return {"option": o["id"]}
+				for q in help_targets(e, me, e.state.alive_players()):
+					if e.state.player(q).hp < e.state.player(q).max_hp:
+						return {"option": o["id"]}
 			"skill:zhiheng":
 				var junk := e.state.zone(Sgs.hand(me)).cards.filter(func(c): return keep_value(e, int(c)) <= 2)
 				if junk.size() >= 2:
 					return {"option": o["id"]}
 			"skill:rende":
-				if e.state.zone(Sgs.hand(me)).size() >= 4 and not filter_stance(e, me, r.others(e, me), ALLY).is_empty():
+				if e.state.zone(Sgs.hand(me)).size() >= 4 and not help_targets(e, me, r.others(e, me)).is_empty():
 					return {"option": o["id"]}
 	var best := -1
 	var best_score := 0.0
@@ -340,7 +491,10 @@ static func _answer_cards(e: CardEngine, me: int, prompt: Prompt, brng: CardRng,
 			return {"pass": true}
 		"rescue":
 			var target := int(prompt.data["target"])
-			return {"cards": [prompt.cards[0]]} if stance(e, me, target) == ALLY else {"pass": true}
+			var save := stance(e, me, target) == ALLY
+			if e.state.player(me).role == Sgs.ROLE_SPY and target == king_seat(e) and rebels_remain(e, me):
+				save = true   # a dead king hands the game to the rebels, whatever the balance
+			return {"cards": [prompt.cards[0]]} if save else {"pass": true}
 		"negate":
 			var target := int(prompt.data["target"])
 			var harmful: bool = prompt.data["harmful"]
@@ -368,8 +522,29 @@ static func _answer_cards(e: CardEngine, me: int, prompt: Prompt, brng: CardRng,
 	if prompt.min_cards == 0 and prompt.can_pass:
 		return {"pass": true}
 	var discarding: bool = prompt.title.begins_with("Discard") or prompt.data.get("discard", false)
+	var keep_dodge := -1   # a rebel keeps one Dodge back: it is the one card that stops the next Strike
+	var spare := []        # a third Peach or Dodge is hoarding: it crowds out the cards that win fights
+	if discarding:
+		var p := e.state.player(me)
+		var held := {&"peach": 1 if p.hp >= p.max_hp else 0}   # at full HP a second Peach is dead weight too
+		for c in pool:
+			if not e.state.cards.has(int(c)):
+				continue
+			var id := e.card(int(c)).def_id
+			if id == &"dodge" and keep_dodge < 0 and e.state.player(me).role == Sgs.ROLE_REBEL:
+				keep_dodge = int(c)
+			if id == &"peach" or id == &"dodge":
+				held[id] = int(held.get(id, 0)) + 1
+				if held[id] > 2:
+					spare.append(int(c))
+	var value := func(c: int) -> int:
+		if c == keep_dodge:
+			return KEEP_VALUE["peach"] + 1
+		if spare.has(c):
+			return 1
+		return keep_value(e, c) if e.state.cards.has(c) else 0
 	pool.sort_custom(func(a, b):
-		var va := keep_value(e, int(a)) if e.state.cards.has(int(a)) else 0
-		var vb := keep_value(e, int(b)) if e.state.cards.has(int(b)) else 0
+		var va: int = value.call(int(a))
+		var vb: int = value.call(int(b))
 		return va < vb if discarding else va > vb)
 	return {"cards": pool.slice(0, maxi(prompt.min_cards, 1))}

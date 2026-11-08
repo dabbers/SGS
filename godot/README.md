@@ -26,6 +26,7 @@ godot --headless --path . --import          # once, or after adding class_name s
 godot --headless --path . -s tests/run_tests.gd
 godot --headless --path . -s tests/run_tests.gd sanguosha   # name filter
 GODOT=/path/to/godot tests/run.sh                            # same, but also fails on script errors
+godot --headless --path . -s tests/balance_probe.gd -- 200 4  # bot balance: win rates over 200 seeded 4-player games
 ```
 
 ## iPhone
